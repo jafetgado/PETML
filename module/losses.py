@@ -13,6 +13,8 @@ from tensorflow.keras.losses import mean_absolute_error, mean_squared_error
 
 
 
+
+
 def entropy_loss(X_true, X_pred, method='sum', numpy=False):
     '''Return the categorical cross entropy'''
     
@@ -25,6 +27,8 @@ def entropy_loss(X_true, X_pred, method='sum', numpy=False):
         loss = loss.numpy()
     
     return loss
+    
+    
     
     
     
@@ -45,6 +49,8 @@ def mae_loss(X_true, X_pred, method='sum', numpy=False):
     
     
     
+    
+    
 def mse_loss(y_true, y_pred, method='mean', numpy=False):
     '''Return the mean squared error'''
     
@@ -57,6 +63,8 @@ def mse_loss(y_true, y_pred, method='mean', numpy=False):
         loss = loss.numpy()
     
     return loss
+    
+    
     
     
     
@@ -77,6 +85,8 @@ def compute_kernel(x, y):
 
 
 
+
+
 def compute_mmd(x, y):
     '''Compute the maximum mean discrepancy (MMD)'''
     
@@ -85,6 +95,8 @@ def compute_mmd(x, y):
     xy_kernel = compute_kernel(x, y)
     
     return K.mean(x_kernel) + K.mean(y_kernel) - 2 * K.mean(xy_kernel)    
+
+
 
 
 
@@ -101,6 +113,8 @@ def mmd_loss(train_z, train_xr, train_x):
 
         
     
+
+
     
 def kl_loss(Z_mean, Z_var, numpy=False):
     '''Compute the Kullback-Leibler divergence'''
@@ -110,6 +124,8 @@ def kl_loss(Z_mean, Z_var, numpy=False):
         loss_kl = loss_kl.numpy()
     
     return loss_kl
+    
+    
     
     
     
