@@ -35,40 +35,43 @@ def deliner(path):
     '''Remove line breaks within sequence data of a fasta file (path) and save the result
     by overwritting the original file'''
 
-    file_input = open(path, 'r')
-	data = []
-	
-	for line in file_input:
-		text = line.strip()
+    data = []
 
-		if text.startswith('>'):
-			data.append(text)
-			is_header = True
-		else:
-			if is_header == True:
-				data.append(text)						
-			elif is_header == False:
-				data[-1] += text
-			is_header = False
-	
-	file_input.close()
+    with open(path, 'r') as file_input:
+        
+        for line in file_input:
+            text = line.strip()
+    
+            if text.startswith('>'):
+                data.append(text)
+                is_header = True
+            else:
+                if is_header == True:
+                    data.append(text)						
+                elif is_header == False:
+                    data[-1] += text
+                is_header = False
 
-	with open(path, 'w') as file_output:
-		for ele in data:
-			file_output.write(ele + '\n')
+    with open(path, 'w') as file_output:
+        for ele in data:
+            file_output.write(ele + '\n')
+    
+    return
+
+
 
 
 
 
 def read_fasta(fasta, return_as_dict=False):
-    '''
-    Read the protein sequences in a fasta file. If return_as_dict, return a dictionary
-    with headers as keys and sequences as values, else return a tuple: 
-        (list_of_headers, list_of_sequences).    	
-    '''
+    '''Read the protein sequences in a fasta file. If return_as_dict, return a dictionary
+    with headers as keys and sequences as values, else return a tuple, 
+    (list_of_headers, list_of_sequences)'''
     
+    headers, sequences = [], []
+
     with open(fasta, 'r') as fast:
-        headers, sequences = [], []
+        
         for line in fast:
             if line.startswith('>'):
                 head = line.replace('>','').strip()
@@ -78,6 +81,7 @@ def read_fasta(fasta, return_as_dict=False):
                 seq = line.strip()
                 if len(seq) > 0:
                     sequences[-1] += seq
+
     if return_as_dict:
         return dict(zip(headers, sequences))
     else:
@@ -86,22 +90,38 @@ def read_fasta(fasta, return_as_dict=False):
 
 
 
+
+
 def write_fasta(headers, seqdata, path):
-	'''
-    Write a fasta file (path) from a list of headers and a corresponding list 
-    of sequences (seqdata).
-    '''
+    '''Write a fasta file (path) from a list of headers and a corresponding list 
+    of sequences (seqdata)'''
     
-	with open(path, 'w') as pp:
-		for i in range(len(headers)):
-			pp.write('>' + headers[i] + '\n' + seqdata[i] + '\n')
+    with open(path, 'w') as pp:
+        for i in range(len(headers)):
+            pp.write('>' + headers[i] + '\n' + seqdata[i] + '\n')
+    
+    return
             
 
 
 
+
+
+def get_accession(path):
+    ''' Return a list of accession codes for all sequences in a fasta file (path).'''
+    
+    [heads, seqs] = read_fasta(path)
+    accessions =  [head.split()[0] for head in heads]
+    
+    return accessions
+
+
+
+
+
+
 def mafft_MSA(read_path, write_path, Mafft_exe='/usr/local/bin/mafft'):
-    '''
-    Align sequences in fasta file (read_path) with MAFFT (executable in Mafft_exe). Write
+    '''Align sequences in fasta file (read_path) with MAFFT (executable in Mafft_exe). Write
     aligned sequences to write_path.
     '''
     
@@ -183,12 +203,6 @@ def remove_gaps(input_file, output_file, gap='-', replacewith=''):
 
 
 
-def get_accession(path):
-    ''' Returns a list of all accession codes from a genbank fasta file (path).'''
-    
-    [h,s] = read_fasta(path)
-    
-    return [x.split()[0] for x in h]
 
 
 
