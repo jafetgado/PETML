@@ -7,14 +7,10 @@ Utility functions for preprocessing and analysis
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-
-import os
 import subprocess
 
 from Bio.Align.Applications import MafftCommandline
-from Bio import Entrez, SeqIO, AlignIO
-
+from Bio import AlignIO
 
 
 
@@ -26,7 +22,6 @@ NONCANONICAL = list('BJOUZ')
 AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
 REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
 MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'
-
 
 
 
@@ -510,3 +505,6 @@ def hamming_weights(fastafile, minseqid=0.8, maxseqs=None,
         subprocess.call('rm -rfv ./tempdir', shell=True)
         
     return weights
+
+
+

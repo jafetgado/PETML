@@ -151,10 +151,3 @@ def amino_accuracy(X_true, X_pred, numpy=False):
 
 
 
-
-
-
-
-
-
-
