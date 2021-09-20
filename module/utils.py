@@ -1,26 +1,9 @@
 """
-Custom losses for training Tensorflow/Keras models
-"""
-
-
-
-
-import tensorflow as tf
-from tensorflow.keras import backend as K
-from tensorflow.keras.losses import categorical_crossentropy 
-from tensorflow.keras.losses import mean_absolute_error, mean_squared_error
-
-
-"""
 Utility functions for preprocessing and analysis
 """
 
 
 
-
-#==============#
-# Imports
-#==============#
 
 import numpy as np
 import pandas as pd
@@ -37,28 +20,22 @@ from Bio import Entrez, SeqIO, AlignIO
 
 
 
-#===============#
-# Variables
-#===============#
 
-amino_letters = list('-ACDEFGHIKLMNPQRSTVWYX') # X: all non-canonical AAs; -: stop char
-amino_dict = {char:num for (num,char) in enumerate(amino_letters)}
-reverse_amino_dict = {num:char for (num,char) in enumerate(amino_letters)}
+AMINO_LETTERS = list('-ACDEFGHIKLMNPQRSTVWYX') # Non-canonical (X), gap/stop char (-)
+AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
+REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
 
 
 
 
 
 
-#=========================================#
-# Functions for processing sequence data
-#=========================================#
 
 def deliner(path):
-	'''Remove line breaks within sequence data of a fasta file (path) and save the result
-    by overwritting the original file.'''
+    '''Remove line breaks within sequence data of a fasta file (path) and save the result
+    by overwritting the original file'''
 
-	file_input = open(path, 'r')
+    file_input = open(path, 'r')
 	data = []
 	
 	for line in file_input:
@@ -299,25 +276,25 @@ def pad_sequence(sequence, maxlen=600, padtype='pre', padchar='-'):
 
 
 
-def categorical_encode_sequence(sequence, amino_dict=amino_dict):
+def categorical_encode_sequence(sequence, AMINO_DICT=AMINO_DICT):
     '''Convert an amino acid sequence to a 1D array with amino acids encoded as 
     integers'''
 
     for char in list('BJOUZ'):
         sequence = sequence.replace(char, 'X')
-    seq_encoding = np.array([amino_dict[char] for char in sequence])
+    seq_encoding = np.array([AMINO_DICT[char] for char in sequence])
     
     return seq_encoding
 
     
     
     
-def one_hot_encode_sequence(sequence, amino_dict=amino_dict, canonical=True):
+def one_hot_encode_sequence(sequence, AMINO_DICT=AMINO_DICT, canonical=True):
     '''Convert an amino acid sequence to a 2D array with position as rows and amino acids
     as one-hot encoded columns'''
     
     # Initialize empty 2D array
-    array = np.zeros((len(sequence),len(amino_dict))) 
+    array = np.zeros((len(sequence),len(AMINO_DICT))) 
     
     # Replace noncanonical characters with X
     if canonical:
@@ -326,7 +303,7 @@ def one_hot_encode_sequence(sequence, amino_dict=amino_dict, canonical=True):
     
     # One-hot encode sequence
     for (i, char) in enumerate(sequence):
-        array[i, amino_dict[char]] = 1
+        array[i, AMINO_DICT[char]] = 1
 
     return array
 
@@ -354,9 +331,9 @@ def categorical_to_one_hot(array, maxlen=600, feature_dim=22):
 
 
 
-def reverse_one_hot_encode_sequence(array, reverse_amino_dict=reverse_amino_dict):
+def reverse_one_hot_encode_sequence(array, REVERSE_AMINO_DICT=REVERSE_AMINO_DICT):
     seq_as_int = array.argmax(axis=-1).reshape(-1)
-    seq_as_str = ''.join([reverse_amino_dict[num] for num in seq_as_int])
+    seq_as_str = ''.join([REVERSE_AMINO_DICT[num] for num in seq_as_int])
     
     return seq_as_str
 
