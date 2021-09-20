@@ -10,7 +10,7 @@ import pandas as pd
 import subprocess
 
 from Bio.Align.Applications import MafftCommandline
-from Bio import AlignIO
+from Bio import AlignIO, SeqIO
 
 
 
@@ -21,7 +21,11 @@ AMINO_LETTERS = list('-ACDEFGHIKLMNPQRSTVWYX') # Non-canonical (X), gap/stop cha
 NONCANONICAL = list('BJOUZ')
 AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
 REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
-MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'
+MMSEQS_EXEC = '/home/jgado/condaenvs/tfgpu/bin/mmseqs'
+MAFFT_EXEC = '/usr/local/bin/mafft'
+HMMBUILD_EXEC = '/usr/local/bin/hmmbuild'
+
+
 
 
 
@@ -182,14 +186,31 @@ def sto_to_fasta(sto_file, fasta_file):
 
 
 
-def mafft_MSA(read_path, write_path, Mafft_exe='/usr/local/bin/mafft'):
+def extract_sequences(fastafile, seqids, outfile):
+    '''Extract sequences with accession IDs in a list (seqids) from fastafile and write
+    extracted sequences to outfile'''
+    
+    records = (record for record in SeqIO.parse(fastafile, 'fasta') \
+                       if record.id in seqids)
+    count = SeqIO.write(records, outfile, 'fasta')
+    if count < len(seqids):
+        print(f'{len(seqids) - count} IDs not found in {fastafile}')
+                
+    return 
+    
+    
+            
+    
+    
+    
+def mafft_MSA(read_path, write_path):
     '''Align sequences in fasta file (read_path) with MAFFT (executable in Mafft_exe). Write
     aligned sequences to write_path.
     '''
     
     # Align sequences    
     [heads1, sequences1] = read_fasta(read_path)
-    Mafft_cline = MafftCommandline(Mafft_exe, input=read_path)
+    Mafft_cline = MafftCommandline(MAFFT_EXEC, input=read_path)
     stdout, stderr = Mafft_cline()
     
     # Write Mafft output
@@ -445,7 +466,6 @@ def split_cluster(clusterfile, testsize=0.2, random_seed=None, verbose=True):
     return (trainset, testset)
 
 
-
     
   
     
@@ -505,6 +525,33 @@ def hamming_weights(fastafile, minseqid=0.8, maxseqs=None,
         subprocess.call('rm -rfv ./tempdir', shell=True)
         
     return weights
+
+
+
+
+
+
+def hmmbuild_fxn(msafile, hmmfile):
+    '''Build a profile hidden markov Model from aligned sequences in msafile with the
+    HMMER hmmbuild function. Return the stdout as a string'''
+    
+    stdout = subprocess.check_output(f'{HMMBUILD_EXEC} {hmmfile} {msafile}', shell=True)
+    
+    return stdout
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
 
 
 
