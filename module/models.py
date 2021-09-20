@@ -235,7 +235,6 @@ def convDecoder(input_dim=(674,21), latent_dim=50, filter_size=64, kernel=2, dro
 
     # Inputs
     latent_input = Input(latent_dim)
-    protein_input = Input(input_dim)
     reg = L2(regfactor) if regfactor > 0 else None
     X = latent_input
     
@@ -249,6 +248,7 @@ def convDecoder(input_dim=(674,21), latent_dim=50, filter_size=64, kernel=2, dro
     # Concatenate with input shifted forward one time step
     if autoregressive:
         # Shift input
+        protein_input = Input(input_dim)
         X_protein = ZeroPadding1D(padding=(1,0))(protein_input) 
         X_protein = Lambda(lambda xtime: xtime[:,:-1,:])(X_protein)
         
@@ -275,7 +275,12 @@ def convDecoder(input_dim=(674,21), latent_dim=50, filter_size=64, kernel=2, dro
     Xhat = Conv1D(filters=input_dim[1], kernel_size=1, strides=1, padding='causal', 
                   dilation_rate=1, activation='softmax', kernel_regularizer=reg, 
                   bias_regularizer=reg)(X)
-    decoder = Model([latent_input, protein_input], Xhat,  name=name)
+    
+    # Model
+    if autoregressive:
+        decoder = Model([latent_input, protein_input], Xhat,  name=name)
+    else:
+        decoder = Model(latent_input, Xhat, name=name)
     
     return decoder   
 
