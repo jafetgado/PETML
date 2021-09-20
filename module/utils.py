@@ -22,6 +22,7 @@ from Bio import Entrez, SeqIO, AlignIO
 
 
 AMINO_LETTERS = list('-ACDEFGHIKLMNPQRSTVWYX') # Non-canonical (X), gap/stop char (-)
+NONCANONICAL = list('BJOUZ')
 AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
 REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
 
@@ -120,6 +121,71 @@ def get_accession(path):
 
 
 
+def fasta_to_df(fasta):
+    '''Read aligned sequences from a fasta file and return a Pandas dataframe with
+    sequences as rows and residues as columns'''
+    
+    heads, sequences = read_fasta(fasta)
+    data = [list(seq) for seq in sequences]
+    lengths = [len(seq) for seq in data]
+    assert len(set(lengths)) == 1, f'Sequences in {fasta} are of unequal length!'
+    df = pd.DataFrame(data)
+    df.index = [head.replace('>', '') for head in heads]
+    
+    return df            
+
+
+
+
+
+
+def df_to_fasta(df, fasta):
+    '''Write a 2D array (dataframe) of aligned sequences (with sequences as rows and 
+    residues as columns) to a fasta file'''
+    
+    heads = df.index.values
+    sequences = [''.join(df.iloc[i,:].values) for i in range(len(df))]
+    write_fasta(heads, sequences, fasta)
+    
+    return
+    
+    
+    
+    
+    
+    
+def remove_gaps(input_file, output_file, gap='-', replacewith=''):
+    '''Remove all gap characters from sequences in input_file and write a sequences to
+    output_file'''
+    
+    [head, seq] = read_fasta(input_file)
+    new_seq = [x.replace('-', replacewith) for x in seq]
+    write_fasta(head, new_seq, output_file)
+    
+    return
+
+
+
+
+
+
+def sto_to_fasta(sto_file, fasta_file):
+    '''Convert hmmer sequence output file from stockholm format to fasta format'''
+    
+    align = AlignIO.read(sto_file, 'stockholm')
+    _ = AlignIO.write(align, fasta_file, 'fasta')
+    _ = deliner(fasta_file)
+    [heads, seqs] = read_fasta(fasta_file)
+    seqs = [seq.upper() for seq in seqs]
+    _ = write_fasta(heads, seqs, fasta_file)
+    
+    return
+
+
+
+
+
+
 def mafft_MSA(read_path, write_path, Mafft_exe='/usr/local/bin/mafft'):
     '''Align sequences in fasta file (read_path) with MAFFT (executable in Mafft_exe). Write
     aligned sequences to write_path.
@@ -134,83 +200,24 @@ def mafft_MSA(read_path, write_path, Mafft_exe='/usr/local/bin/mafft'):
     with open(write_path, 'w') as store:
         store.write(stdout)
     
-    # Reorder alignment output
+    # Rearrange alignment output to original order
     [heads2, sequences2] = read_fasta(write_path)    
     with open(write_path, 'w') as fileobj:
         for i in range(len(heads1)):
             posi = heads2.index(heads1[i])
             fileobj.write('>' + heads2[posi] + '\n' + sequences2[posi] + '\n')            
-            
-       
-            
-       
-def fasta_to_df(fasta):
-    '''
-    Read aligned sequences in fasta format and return a pandas Dataframe with
-    sequences as indexes and residues as columns.
-    '''
-    
-    heads, sequences = read_fasta(fasta)
-    data = [list(seq) for seq in sequences]
-    lengths = [len(seq) for seq in data]
-    assert len(set(lengths)) == 1, f'Sequences in {fasta} are of unequal length!'
-    df = pd.DataFrame(data)
-    df.index = [head.replace('>', '') for head in heads]
-    
-    return df            
 
-
-
-
-def df_to_fasta(df, fasta):
-    '''
-    Write an MSA dataframe (with sequences as indexes and residues as columns) to a 
-    fasta file
-    '''
-    
-    heads = df.index.values
-    sequences = [''.join(df.iloc[i,:].values) for i in range(len(df))]
-    write_fasta(heads, sequences, fasta)
-
-
-
-
-def get_sequence(Accession):
-    ''' Retrieves the sequence for a given accession number from the NCBI
-    database. Returns [description, sequence].'''
-    
-    
-    Entrez.email = 'japhethgado@gmail.com'
-    handle = Entrez.efetch(db='protein', id=Accession, rettype='fasta', \
-						   retmode='text')
-    record = SeqIO.read(handle, 'fasta')
-    desc = record.description
-    sequ = str(record.seq)
-    
-    return [desc, sequ]
-
-
-
-
-def remove_gaps(input_file, output_file, gap='-', replacewith=''):
-    '''Remove all gaps from sequences in input_file and saves the result in 
-    output_file.'''
-    
-    [head, seq] = read_fasta(input_file)
-    new_seq = [x.replace('-', replacewith) for x in seq]
-    write_fasta(head, new_seq, output_file)
-
-
-
+    return 
+             
 
 
 
 
 
 def seq_identity(seq1, seq2, gap = '-', short=True):
-    ''' Calculates the percentage sequence identity between 2 aligned sequences
-    relative to the shortest sequence. If short is set to false, the identity is 
-    calculated relative to the longest sequence.'''
+    ''' Calculates the percentage sequence identity between 2 aligned sequences. If short
+    is true, seq_identity is calculated relative to the shortest sequence, else, relative
+    to the longest sequence.'''
     
     arr1, arr2, gapseq = [np.fromstring(arr, dtype='S1') \
                           for arr in [seq1, seq2, gap * len(seq1)]]
@@ -225,30 +232,35 @@ def seq_identity(seq1, seq2, gap = '-', short=True):
 
 
 
-def seqid_matrix(fasta):
+
+
+def seqid_matrix(fasta, align=False):
     '''Returns a matrix (DataFrame) of pairwise sequence identities for all 
-    sequences in a fasta file (fasta). The index and column names of the dataframe
-    are the accesion codes of the sequences in the fasta file. If align=True,
-    the a Mafft MSA is carried out before alignment.'''
+    sequences in a fasta file. The accession codes of sequences are the index and column
+    names of the dataframe.  If align is True, sequences are aligned with Mafft before 
+    analysis.'''
     
-    # Align, if sequences are not of same length
-    [heads,seqs] = read_fasta(fasta)
+    # Retrieved aligned sequences
+    [heads, seqs] = read_fasta(fasta)
     acc_list = get_accession(fasta)
     lengths = [len(seq) for seq in seqs]
     lengths = set(lengths)
 
-    if len(lengths) > 1:
-        # Multiple sequence alignment
-        deliner(fasta)
-        mafft_MSA(fasta,fasta)
-
-        # Read aligned sequences
-        [heads,seqs] = read_fasta(fasta)
+    if (len(lengths) > 1):
         
-        # Then remove gaps to return to unaligned
-        remove_gaps(fasta, fasta)
+        if align:
+            deliner(fasta)
+            msafasta = '_' + fasta
+            mafft_MSA(fasta, msafasta)
+            [heads, seqs] = read_fasta(msafasta)
+            subprocess.call(f'rm -rf {msafasta}', shell=True)
+        
+        else:
+            error = 'Sequences are not of equal length and must be first aligned.'
+            raise ValueError(error)
     
-    # Sequence identity matrix
+    
+    # Sequence identity matrix of aligned sequences
     iden_mat = np.zeros((len(seqs), len(seqs)))
 
     for i in range(len(seqs)):
@@ -262,7 +274,7 @@ def seqid_matrix(fasta):
                 iden_mat[i,k] = iden
                 iden_mat[k,i] = iden
     
-    # Return as dataframe
+    # Return identity matrix as dataframe
     df = pd.DataFrame(iden_mat, index=acc_list, columns=acc_list)
     
     return df
@@ -270,13 +282,14 @@ def seqid_matrix(fasta):
 
 
 
-def pad_sequence(sequence, maxlen=600, padtype='pre', padchar='-'):
-    '''Pad amino acid sequence to maxlen by adding padchar before (pre) or after (post)
-    the sequence'''
+
+
+def pad_sequence(sequence, maxlen=600, padtype='post', padchar='-'):
+    '''Pad amino acid sequence to by adding a pad character to the sequence'''
     
     sequence = sequence.upper()
     seqlen = len(sequence)
-    assert seqlen <= maxlen
+    assert seqlen <= maxlen, 'Sequence cannot be longer than maxlen'
     addlen = maxlen - seqlen
     if padtype == 'pre':
         sequence = (padchar * addlen) + sequence
@@ -290,11 +303,12 @@ def pad_sequence(sequence, maxlen=600, padtype='pre', padchar='-'):
 
 
 
-def categorical_encode_sequence(sequence, AMINO_DICT=AMINO_DICT):
-    '''Convert an amino acid sequence to a 1D array with amino acids encoded as 
-    integers'''
 
-    for char in list('BJOUZ'):
+
+def categorical_encode_sequence(sequence):
+    '''Convert an amino acid sequence to a 1D array of integer encodings'''
+
+    for char in NONCANONICAL:
         sequence = sequence.replace(char, 'X')
     seq_encoding = np.array([AMINO_DICT[char] for char in sequence])
     
@@ -302,18 +316,34 @@ def categorical_encode_sequence(sequence, AMINO_DICT=AMINO_DICT):
 
     
     
+
+
     
-def one_hot_encode_sequence(sequence, AMINO_DICT=AMINO_DICT, canonical=True):
-    '''Convert an amino acid sequence to a 2D array with position as rows and amino acids
-    as one-hot encoded columns'''
+def categorical_to_one_hot(array, maxlen=600, feature_dim=22):
+    '''Convert a 2D categorical encoded array (None, maxlen) to a one-hot encoded 3D 
+    array (None, maxlen, feature_dim)'''
     
-    # Initialize empty 2D array
+    array3d = np.zeros((len(array), maxlen, feature_dim))
+    for dim1 in range(len(array)):
+        for dim2, dim3 in enumerate(array[dim1,:]):
+            array3d[dim1, dim2, dim3] = 1
+            
+    return array3d
+            
+            
+    
+
+
+
+def one_hot_encode_sequence(sequence):
+    '''Convert an amino acid sequence to a 2D array with amino acid position as rows and 
+    amino acids as one-hot encoded columns'''
+    
     array = np.zeros((len(sequence),len(AMINO_DICT))) 
     
-    # Replace noncanonical characters with X
-    if canonical:
-        for char in list('BJOUZ'):
-            sequence = sequence.replace(char, 'X')
+    # Replace all non-canonical amino acids with X
+    for char in NONCANONICAL:
+        sequence = sequence.replace(char, 'X')
     
     # One-hot encode sequence
     for (i, char) in enumerate(sequence):
@@ -324,29 +354,14 @@ def one_hot_encode_sequence(sequence, AMINO_DICT=AMINO_DICT, canonical=True):
 
 
 
-def categorical_to_one_hot(array, maxlen=600, feature_dim=22):
-    '''Convert a categorical encoded array (2D) to a 3D one-hot encoded array'''
-    
-    array3d = np.zeros((len(array), maxlen, feature_dim))
-    for dim1 in range(len(array)):
-        for dim2, dim3 in enumerate(array[dim1,:]):
-            array3d[dim1, dim2, dim3] = 1
-            
-    return array3d
-            
-            
-    assert len(array) == maxlen
-    out_array = np.zeros((maxlen, feature_dim))
-    for i,intval in enumerate(array):
-        out_array[i, intval] = 1
-    
-    return out_array
+
     
 
-
-
-def reverse_one_hot_encode_sequence(array, REVERSE_AMINO_DICT=REVERSE_AMINO_DICT):
-    seq_as_int = array.argmax(axis=-1).reshape(-1)
+def reverse_one_hot_encode_sequence(array):
+    '''Convert a 2D sequence encoding (amino acid index as rows, encoding/probability as
+    columns) to a sequence string'''
+    
+    seq_as_int = np.argmax(array, axis=-1).reshape(-1)
     seq_as_str = ''.join([REVERSE_AMINO_DICT[num] for num in seq_as_int])
     
     return seq_as_str
@@ -354,54 +369,18 @@ def reverse_one_hot_encode_sequence(array, REVERSE_AMINO_DICT=REVERSE_AMINO_DICT
 
 
 
-def jackhmmer_routine(seq_file, db_file, outpath='./jackhmmer_test_output', 
-                      executable='/usr/local/bin/jackhmmer', threshold=100, 
-                      iterations=2, return_hits=True):
-    '''Perform iterative HMM search with jackhmmer and write results to outpath'''
-    
-    # Directory check
-    assert os.path.exists(seq_file)
-    assert os.path.exists(db_file)
-    if not os.path.exists(outpath):
-        os.makedirs(outpath)
-        
-    # Run jackhmmer
-    command = f'{executable} -o {outpath}/jackhmmer_output.txt '\
-              f'-A {outpath}/jackhmmer_alignment_stockholm.txt '\
-              f'--tblout {outpath}/jackhmmer_tabout.txt '\
-              f'-T {threshold} --incT {threshold} -N {iterations} --noali '\
-              f'{seq_file} {db_file}'
-    subprocess.call(command, shell=True)
-    
-    # Convert stockholm alignment to fasta
-    align = AlignIO.read(f'{outpath}/jackhmmer_alignment_stockholm.txt', 'stockholm')
-    _ = AlignIO.write(align, f'{outpath}/jackhmmer_alignment_fasta.txt', 'fasta')
-    deliner(f'{outpath}/jackhmmer_alignment_fasta.txt')
-    
-    # Return aligned hits as tuple
-    if return_hits:
-        return read_fasta(f'{outpath}/jackhmmer_alignment_fasta.txt')
 
 
 
 
-def sto_to_fasta(sto_file, fasta_file):
-    '''Convert jackhmmer alignment file in stockholm format (sto_file) to fasta format
-    (fasta_file)'''
-    
-    align = AlignIO.read(sto_file, 'stockholm')
-    _ = AlignIO.write(align, fasta_file, 'fasta')
-    _ = deliner(fasta_file)
-    [heads, seqs] = read_fasta(fasta_file)
-    seqs = [seq.upper() for seq in seqs]
-    _ = write_fasta(heads, seqs, fasta_file)
+
     
 
     
 
 def hamming_weights(fastafile, minseqid=0.8, maxseqs=None, 
                     output_file='hamming_weights.csv', delete_temp_files=False,
-                    mmseqs_exec='/home/jgado/condaenvs/tfgpu/bin/mmseqs'):
+                    MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'):
     '''Return weights for each sequence in a fasta file. Weights are calculated as the
     inverse count of number of sequences with a hamming distance below the specified 
     threshold. Sequence identity is computed with mmseqs2'''
@@ -415,16 +394,16 @@ def hamming_weights(fastafile, minseqid=0.8, maxseqs=None,
     subprocess.call('mkdir ./tempdir', shell=True)
     
     # Create mmseqs database from sequences
-    subprocess.call(f'{mmseqs_exec} createdb {fastafile} ./tempdir/seqdb --shuffle 0',
+    subprocess.call(f'{MMSEQS_EXEC} createdb {fastafile} ./tempdir/seqdb --shuffle 0',
                     shell=True)
     
     # Search database for hits with hamming distance above threshold
-    subprocess.call(f'{mmseqs_exec} search ./tempdir/seqdb ./tempdir/seqdb '\
+    subprocess.call(f'{MMSEQS_EXEC} search ./tempdir/seqdb ./tempdir/seqdb '\
                     f'./tempdir/results ./tempdir/tmp -s 1 --min-seq-id {minseqid} '\
                     f'--max-seqs {maxseqs}', shell=True)
     
     # Create tsv file from search output
-    subprocess.call(f'{mmseqs_exec} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
+    subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
                     f'./tempdir/results ./tempdir/results.tsv', shell=True)
     
     
@@ -451,22 +430,22 @@ def hamming_weights(fastafile, minseqid=0.8, maxseqs=None,
    
 def cluster_sequences(fastafile, clusterfile, minseqid=0.7, 
                       delete_temp_files=True, parse=False,
-                      mmseqs_exec='/home/jgado/condaenvs/tfgpu/bin/mmseqs'):
+                      MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'):
     '''Cluster sequences in fastafile to clusters with minimum sequence identity of 
     minseqid. Accession codes of sequences in each cluster are written to clusterfile in 
     a fasta-like format'''
     
     # Make mmseqs database from sequence fasta file
     subprocess.call('mkdir ./tempdir', shell=True)
-    subprocess.call(f'{mmseqs_exec} createdb {fastafile} ./tempdir/seqdb --shuffle 0',
+    subprocess.call(f'{MMSEQS_EXEC} createdb {fastafile} ./tempdir/seqdb --shuffle 0',
                     shell=True)
     
     # Cluster database
-    subprocess.call(f'{mmseqs_exec} cluster ./tempdir/seqdb ./tempdir/seqdb_cluster '\
+    subprocess.call(f'{MMSEQS_EXEC} cluster ./tempdir/seqdb ./tempdir/seqdb_cluster '\
                     f'./tempdir/tmp --min-seq-id {minseqid}', shell=True)
     
     # Create tsv file from cluster output
-    subprocess.call(f'{mmseqs_exec} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
+    subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
                     f'./tempdir/seqdb_cluster ./tempdir/seqdb_cluster.tsv', shell=True)
     
     if parse:
