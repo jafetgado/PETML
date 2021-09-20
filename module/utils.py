@@ -25,6 +25,7 @@ AMINO_LETTERS = list('-ACDEFGHIKLMNPQRSTVWYX') # Non-canonical (X), gap/stop cha
 NONCANONICAL = list('BJOUZ')
 AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
 REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
+MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'
 
 
 
@@ -285,7 +286,7 @@ def seqid_matrix(fasta, align=False):
 
 
 def pad_sequence(sequence, maxlen=600, padtype='post', padchar='-'):
-    '''Pad amino acid sequence to by adding a pad character to the sequence'''
+    '''Pad amino acid sequence by adding a pad character to the sequence'''
     
     sequence = sequence.upper()
     seqlen = len(sequence)
@@ -353,9 +354,8 @@ def one_hot_encode_sequence(sequence):
 
 
 
-
-
     
+
 
 def reverse_one_hot_encode_sequence(array):
     '''Convert a 2D sequence encoding (amino acid index as rows, encoding/probability as
@@ -371,67 +371,9 @@ def reverse_one_hot_encode_sequence(array):
 
 
 
-
-
-
-    
-
-    
-
-def hamming_weights(fastafile, minseqid=0.8, maxseqs=None, 
-                    output_file='hamming_weights.csv', delete_temp_files=False,
-                    MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'):
-    '''Return weights for each sequence in a fasta file. Weights are calculated as the
-    inverse count of number of sequences with a hamming distance below the specified 
-    threshold. Sequence identity is computed with mmseqs2'''
-    
-    # Get accessions of sequences in fasta file
-    accessions = get_accession(fastafile)
-    if maxseqs is None:
-        maxseqs = len(accessions)
-    
-    # Create folder for temporarily storing results
-    subprocess.call('mkdir ./tempdir', shell=True)
-    
-    # Create mmseqs database from sequences
-    subprocess.call(f'{MMSEQS_EXEC} createdb {fastafile} ./tempdir/seqdb --shuffle 0',
-                    shell=True)
-    
-    # Search database for hits with hamming distance above threshold
-    subprocess.call(f'{MMSEQS_EXEC} search ./tempdir/seqdb ./tempdir/seqdb '\
-                    f'./tempdir/results ./tempdir/tmp -s 1 --min-seq-id {minseqid} '\
-                    f'--max-seqs {maxseqs}', shell=True)
-    
-    # Create tsv file from search output
-    subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
-                    f'./tempdir/results ./tempdir/results.tsv', shell=True)
-    
-    
-    # Count number of hits for each sequence
-    counts = np.ones((len(accessions),))
-    for (i,acc) in enumerate(accessions):
-        output = subprocess.check_output(f'grep "^{acc}" ./tempdir/results.tsv | wc',shell=True)
-        counts[i] = int(output.decode('utf-8').split()[0])
-    weights = 1 / counts
-    weights = pd.DataFrame([accessions, weights]).transpose()
-    
-    # Write weights to disk
-    if output_file is not None:
-        weights.to_csv(output_file)
-    
-    # Delete temp files
-    if delete_temp_files:
-        subprocess.call('rm -rfv ./tempdir', shell=True)
-        
-    return weights
-    
-   
-    
-   
-def cluster_sequences(fastafile, clusterfile, minseqid=0.7, 
-                      delete_temp_files=True, parse=False,
-                      MMSEQS_EXEC='/home/jgado/condaenvs/tfgpu/bin/mmseqs'):
-    '''Cluster sequences in fastafile to clusters with minimum sequence identity of 
+def cluster_sequences(fastafile, clusterfile, minseqid=0.7, delete_temp_files=True, 
+                      parse=False):
+    '''Cluster sequences in a fasta file to clusters with minimum sequence identity of 
     minseqid. Accession codes of sequences in each cluster are written to clusterfile in 
     a fasta-like format'''
     
@@ -448,29 +390,30 @@ def cluster_sequences(fastafile, clusterfile, minseqid=0.7,
     subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
                     f'./tempdir/seqdb_cluster ./tempdir/seqdb_cluster.tsv', shell=True)
     
-    if parse:
-        # Parse cluster tsv file
-        df = pd.read_csv('./tempdir/seqdb_cluster.tsv', index_col=0, header=None, sep='\t')
-        reps = np.unique(df.index)
-        clusters = [df.loc[(df.index==rep),:].values.reshape(-1) for rep in reps]
+    # Parse cluster tsv file
+    df = pd.read_csv('./tempdir/seqdb_cluster.tsv', index_col=0, header=None, sep='\t')
+    reps = np.unique(df.index)
+    clusters = [df.loc[(df.index==rep),:].values.reshape(-1) for rep in reps]
+    
+    # Write cluster data in fasta-like format
+    with open(clusterfile, 'w') as file:
+        for i,cluster in enumerate(clusters):
+            file.write(f'>cluster{i}::{reps[i]}::{len(cluster)}\n')
+            file.write(f"{', '.join(cluster)}\n")
+    
+    # Remove temp files
+    if delete_temp_files:
+        subprocess.call('rm -rfv ./tempdir', shell=True)
         
-        # Write cluster data in fasta-like format
-        with open(clusterfile, 'w') as file:
-            for i,cluster in enumerate(clusters):
-                file.write(f'>cluster{i}::{reps[i]}::{len(cluster)}\n')
-                file.write(f"{', '.join(cluster)}\n")
-        
-        # Remove temp files
-        if delete_temp_files:
-            subprocess.call('rm -rfv ./tempdir', shell=True)
-        return clusters
+    return clusters
+
+
 
 
 
 
 def split_cluster(clusterfile, testsize=0.2, random_seed=None, verbose=True):
-    '''Randomly split clustered sequences in clusterfile into training and testing sets
-    '''
+    '''Randomly split clustered sequences in clusterfile into training and testing sets'''
     
     # Read cluster data
     heads, clusters = read_fasta(clusterfile)
@@ -506,29 +449,65 @@ def split_cluster(clusterfile, testsize=0.2, random_seed=None, verbose=True):
                 len(trainset), len(trainset)/totalcount * 100))
     
     return (trainset, testset)
+
+
+
     
   
     
   
-
-
-#=========================================#
-# Functions for model analysis
-#=========================================#
-
-
-def plotHistory(history, losstype='loss', savepath=None):
-    fig, ax1 = plt.subplots()
-    ax1.plot(history.history[losstype], label='Training', color='dodgerblue')
-    ax1.set_xlabel('Epochs')
-    ax1.set_ylabel(f'Training {losstype}')
-    ax2 = ax1.twinx()
-    ax2.plot(history.history[f'val_{losstype}'], label='Validation', 
-             color='indianred')
-    ax2.set_ylabel(f'Validation {losstype}')
-    fig.legend(bbox_to_anchor=(0.86, 0.46), loc='right', ncol=1)
-    plt.title(f'{losstype} in model history')
-    plt.tight_layout()
-    if savepath is not None:
-        plt.savefig(savepath)
-    plt.show(); plt.close()
+def hamming_weights(fastafile, minseqid=0.8, maxseqs=None, 
+                    output_file='hamming_weights.csv', delete_temp_files=False):
+    '''Return sample weights for each sequence in a fasta file. Weights are calculated as 
+    the inverse count of number of sequences with a hamming distance below the specified 
+    threshold (Riesselman et al, 2018). Hamming distances are computed with the mmseqs2
+    algorithm
+    
+    REWRITE THIS FUNCTION
+    * Use cluster instead of search.
+    * For each sequence in a cluster, assign 1/(size of cluster) as hamming weight
+    * Doing this avoids using grep to parse the search results, which is a major
+    bottle neck.
+    
+    '''
+    
+    # Get accessions of sequences in fasta file
+    accessions = get_accession(fastafile)
+    if maxseqs is None:
+        maxseqs = len(accessions)
+    
+    # Create temporary folder for storing results
+    subprocess.call('mkdir ./tempdir', shell=True)
+    
+    # Create mmseqs database from sequences
+    subprocess.call(f'{MMSEQS_EXEC} createdb {fastafile} ./tempdir/seqdb --shuffle 0',
+                    shell=True)
+    
+    # Search database for hits with hamming distance above threshold
+    subprocess.call(f'{MMSEQS_EXEC} search ./tempdir/seqdb ./tempdir/seqdb '\
+                    f'./tempdir/results ./tempdir/tmp -s 1 --min-seq-id {minseqid} '\
+                    f'--max-seqs {maxseqs}', shell=True)
+    
+    # Create tsv file from search output
+    subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
+                    f'./tempdir/results ./tempdir/results.tsv', shell=True)
+    
+    
+    # Count number of hits for each sequence
+    counts = np.ones((len(accessions),))
+    for (i,acc) in enumerate(accessions):
+        output = subprocess.check_output(f'grep "^{acc}" ./tempdir/results.tsv | wc',
+                                         shell=True)
+        counts[i] = int(output.decode('utf-8').split()[0])
+    weights = 1 / counts
+    weights = pd.DataFrame([accessions, weights]).transpose()
+    
+    # Write weights to disk
+    if output_file is not None:
+        weights.to_csv(output_file)
+    
+    # Delete temp files
+    if delete_temp_files:
+        subprocess.call('rm -rfv ./tempdir', shell=True)
+        
+    return weights
