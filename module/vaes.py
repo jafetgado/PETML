@@ -22,8 +22,6 @@ class ProtVAE():
     '''Variational autoencoders for generative modelling of protein sequences'''
     
     
-    
-    
     def __init__(self, encoder=None, decoder=None, auxdecoder=None, mean=0, stddev=1, 
                  autoregressive=False, beta=1.0, lambda_=1.0, name='m1vae'):
         
