@@ -11,26 +11,7 @@ from tensorflow.keras import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.regularizers import l2 as L2
 from tensorflow.keras.layers import Input, Dense, Dropout, Lambda, Flatten, Reshape, \
-                                    Activation, Conv1D, Conv2DTranspose, Add, \
-                                    Concatenate, ZeroPadding1D                               
-
-
-
-
-
-
-def Conv1DTranspose(input_tensor, filters, kernel_size, strides=2, padding='valid', 
-                    activation='elu', kernel_regularizer=None, bias_regularizer=None):
-    '''Custom implementation of Conv1DTranspose layer from Conv2DTranspose'''
-    
-    X = Lambda(lambda xx: K.expand_dims(xx, axis=2))(input_tensor)
-    X = Conv2DTranspose(filters=filters, kernel_size=(kernel_size, 1), 
-                        strides=(strides, 1), padding=padding, activation=activation, 
-                        kernel_regularizer=kernel_regularizer,
-                        bias_regularizer=bias_regularizer)(X)
-    X = Lambda(lambda xx: K.squeeze(xx, axis=2))(X)
-    
-    return X
+                                    Activation, Conv1D, Add, Concatenate, ZeroPadding1D                               
 
 
 

@@ -19,7 +19,7 @@ import module.models as models
 
 
 class ProtVAE():
-    '''Variational autoencoders for generative modelling of protein sequences'''
+    '''Variational autoencoders for generative modeling of protein sequences'''
     
     
     def __init__(self, encoder=None, decoder=None, auxdecoder=None, mean=0, stddev=1, 
