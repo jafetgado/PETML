@@ -10,8 +10,8 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 
-import module.losses as losses
-import module.models as models
+import helper.losses as losses
+import helper.models as models
 
 
 

@@ -1,2 +1,16 @@
-.DS_store
+.DS_Store
 module/__pycache__/
+experiment/.DS_Store
+experiment/hmmsearch/.DS_Store
+experiment/hmmsearch/data/.DS_Store
+experiment/hmmsearch/data/output/.DS_Store
+experiment/hmmsearch/data/petase-hmm/.DS_Store
+experiment/hmmsearch/stdout/.DS_Store
+experiment/hmmsearch/bash_scripts/.DS_Store
+experiment/hmmsearch/python_scripts/.DS_Store
+experiment/hmmsearch/bash_scripts/.DS_Store
+experiment/preprocessing/.DS_Store
+experiment/preprocessing/data/.DS_Store
+experiment/preprocessing/stdout/.DS_Store
+experiment/preprocessing/python_scripts/.DS_Store
+experiment/preprocessing/bash_scripts/.DS_Store

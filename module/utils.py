@@ -23,7 +23,8 @@ AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
 REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
 MMSEQS_EXEC = '/home/jgado/condaenvs/tfgpu/bin/mmseqs'
 MAFFT_EXEC = '/usr/local/bin/mafft'
-HMMBUILD_EXEC = '/usr/local/bin/hmmbuild'
+HMMBUILD_EXEC = '/projects/bpms/jgado/hmmer-3.2.1/src/hmmbuild'
+HMMSEARCH_EXEC = '/projects/bpms/jgado/hmmer-3.2.1/src/hmmsearch'
 
 
 
@@ -191,7 +192,7 @@ def extract_sequences(fastafile, seqids, outfile):
     extracted sequences to outfile'''
     
     records = (record for record in SeqIO.parse(fastafile, 'fasta') \
-                       if record.id in seqids)
+               if record.id in seqids)
     count = SeqIO.write(records, outfile, 'fasta')
     if count < len(seqids):
         print(f'{len(seqids) - count} IDs not found in {fastafile}')
@@ -386,8 +387,9 @@ def reverse_one_hot_encode_sequence(array):
 
 
 
-def cluster_sequences(fastafile, clusterfile, minseqid=0.7, delete_temp_files=True, 
-                      parse=False):
+def cluster_sequences(fastafile, clusterfasta, clusterfile='clusters.txt', minseqid=0.7, 
+                      maxseqs=1000, maxevalue=1e-3, cluster_mode=2, seqidmode=1,
+                      write_cluster_data=False, delete_temp_files=True):
     '''Cluster sequences in a fasta file to clusters with minimum sequence identity of 
     minseqid. Accession codes of sequences in each cluster are written to clusterfile in 
     a fasta-like format'''
@@ -399,28 +401,38 @@ def cluster_sequences(fastafile, clusterfile, minseqid=0.7, delete_temp_files=Tr
     
     # Cluster database
     subprocess.call(f'{MMSEQS_EXEC} cluster ./tempdir/seqdb ./tempdir/seqdb_cluster '\
-                    f'./tempdir/tmp --min-seq-id {minseqid}', shell=True)
+                    f'./tempdir/tmp --min-seq-id {minseqid}  --max-seqs {maxseqs} '\
+                    f'-e {maxevalue} --cluster-mode {cluster_mode} '\
+                    f'--seq-id-mode {seqidmode}', shell=True)
     
-    # Create tsv file from cluster output
-    subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
-                    f'./tempdir/seqdb_cluster ./tempdir/seqdb_cluster.tsv', shell=True)
-    
-    # Parse cluster tsv file
-    df = pd.read_csv('./tempdir/seqdb_cluster.tsv', index_col=0, header=None, sep='\t')
-    reps = np.unique(df.index)
-    clusters = [df.loc[(df.index==rep),:].values.reshape(-1) for rep in reps]
-    
+    # Extract representative sequences
+    subprocess.call(f'{MMSEQS_EXEC} createsubdb ./tempdir/seqdb_cluster ./tempdir/seqdb '\
+                    f'./tempdir/seqdb_rep', shell=True)
+    subprocess.call(f'{MMSEQS_EXEC} convert2fasta ./tempdir/seqdb_rep {clusterfasta}',
+                    shell=True)
+        
     # Write cluster data in fasta-like format
-    with open(clusterfile, 'w') as file:
-        for i,cluster in enumerate(clusters):
-            file.write(f'>cluster{i}::{reps[i]}::{len(cluster)}\n')
-            file.write(f"{', '.join(cluster)}\n")
-    
+    if write_cluster_data:
+        # Create tsv file from cluster output
+        subprocess.call(f'{MMSEQS_EXEC} createtsv ./tempdir/seqdb ./tempdir/seqdb '\
+                        f'./tempdir/seqdb_cluster ./tempdir/seqdb_cluster.tsv', shell=True)
+        
+        # Parse cluster tsv file
+        df = pd.read_csv('./tempdir/seqdb_cluster.tsv', index_col=0, header=None, sep='\t')
+        reps = np.unique(df.index)
+        clusters = [df.loc[(df.index==rep),:].values.reshape(-1) for rep in reps]
+        
+        # Write cluster data
+        with open(clusterfile, 'w') as file:
+            for i,cluster in enumerate(clusters):
+                file.write(f'>cluster{i}::{reps[i]}::{len(cluster)}\n')
+                file.write(f"{', '.join(cluster)}\n")
+
     # Remove temp files
     if delete_temp_files:
         subprocess.call('rm -rfv ./tempdir', shell=True)
-        
-    return clusters
+    
+    return
 
 
 
@@ -544,8 +556,26 @@ def hmmbuild_fxn(msafile, hmmfile):
 
 
 
-
+def parse_hmm_tabout(tabout):
+    '''Parse a hmmer tab output file and return a dataframe of results'''
     
+    data = []
+    with open(tabout, 'r') as tab:
+        for line in tab:
+            if not line.startswith('#'):
+                line = line.split()
+                data.append(line)
+    data = pd.DataFrame(data)
+    
+    return data
+                
+    
+    
+
+
+
+
+
 
 
 
