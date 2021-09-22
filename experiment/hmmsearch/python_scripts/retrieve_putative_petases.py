@@ -25,11 +25,11 @@ HMMSEARCH_EXEC = '/projects/bpms/jgado/hmmer-3.2.1/src/hmmsearch'
 # Align sequences
 seqfile = './experiment/hmmsearch/data/petase-hmm/current_petases.fasta'
 msafile = './experiment/hmmsearch/data/petase-hmm/current_petases_msa.fasta'
-#utils.mafft_MSA(seqfile, msafile)
+utils.mafft_MSA(seqfile, msafile)
 
 # Build HMM
 hmmfile = './experiment/hmmsearch/data/petase-hmm/hmm.txt'
-#_ = utils.hmmbuild_fxn(msafile, hmmfile)  # 61 seqs, 892 positions
+_ = utils.hmmbuild_fxn(msafile, hmmfile)  # 61 seqs, 892 positions
 
 
 
