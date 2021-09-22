@@ -16,13 +16,13 @@ source activate /home/jgado/condaenvs/tfgpu
 
 
 # Run hmmsearch
-#/projects/bpms/jgado/hmmer-3.2.1/src/hmmsearch \
-#-o ./experiment/hmmsearch/data/output/mgnify5_output.txt \
-#--tblout ./experiment/hmmsearch/data/output/mgnify5_tabout.txt \
-#-A ./experiment/hmmsearch/data/output/mgnify5_aln.sto --noali \
-#-T 40 --domT 40 --incT 40 --incdomT 40 \
-#./experiment/hmmsearch/data/petase-hmm/hmm.txt \
-#/scratch/jgado/sequence_databases/mgnify/fasta/mgy_proteins_5.fa
+/projects/bpms/jgado/hmmer-3.2.1/src/hmmsearch \
+-o ./experiment/hmmsearch/data/output/mgnify5_output.txt \
+--tblout ./experiment/hmmsearch/data/output/mgnify5_tabout.txt \
+-A ./experiment/hmmsearch/data/output/mgnify5_aln.sto --noali \
+-T 40 --domT 40 --incT 40 --incdomT 40 \
+./experiment/hmmsearch/data/petase-hmm/hmm.txt \
+/scratch/jgado/sequence_databases/mgnify/fasta/mgy_proteins_5.fa
 
 # Convert stockholm to fasta
 python -c "import sys;

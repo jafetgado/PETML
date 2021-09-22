@@ -76,13 +76,13 @@ source activate /home/jgado/condaenvs/tfgpu
 
 
 # Run hmmsearch
-#{HMMSEARCH_EXEC} \\
-#-o {output_file} \\
-#--tblout {tab_file} \\
-#-A {aln_file} --noali \\
-#-T 40 --domT 40 --incT 40 --incdomT 40 \\
-#{hmmfile} \\
-#{databases[key]}
+{HMMSEARCH_EXEC} \\
+-o {output_file} \\
+--tblout {tab_file} \\
+-A {aln_file} --noali \\
+-T 40 --domT 40 --incT 40 --incdomT 40 \\
+{hmmfile} \\
+{databases[key]}
 
 # Convert stockholm to fasta
 python -c "import sys;
