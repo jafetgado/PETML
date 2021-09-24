@@ -10,8 +10,8 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Input
 from tensorflow.keras.optimizers import Adam
 
-import helper.losses as losses
-import helper.models as models
+from module import losses
+from module import models
 
 
 
@@ -25,7 +25,7 @@ class ProtVAE():
     def __init__(self, encoder=None, decoder=None, auxdecoder=None, mean=0, stddev=1, 
                  autoregressive=False, beta=1.0, lambda_=1.0, name='m1vae'):
         
-        allowed_names = ['m1vae', 'mmdvae', 'auxvae']
+        allowed_names = ['m1vae', 'mmdvae', 'auxvae, auxmmdvae']
         assert (name in allowed_names), f'name must be one of {allowed_names}'
         self.name = name
         self.mean = mean
@@ -34,7 +34,7 @@ class ProtVAE():
         self.decoder = decoder
         self.autoregressive = autoregressive
         self.beta = beta
-        if name=='auxvae':
+        if name in ['auxvae', 'auxmmdvae']:
             self.auxdecoder = auxdecoder
             self.lambda_ = lambda_
         
@@ -143,6 +143,32 @@ class ProtVAE():
     
     
     
+    def _compileAUXMMDVAE(self, input_dim, learning_rate, clipnorm):
+        '''Build and compile an auxiliary MMD-VAE (AUXVAE) from encoder and decoder models
+        (Lucas and Verbeek, 2018; Seybold et al, 2019; Zhao et al, 2019)'''
+        
+        # Build VAE
+        assert self.name == 'auxmmdvae'
+        X_input = Input(shape=input_dim, name='seq_input')
+        Z = self.encoder(X_input)
+        if self.autoregressive:
+            X_pred = self.decoder([Z, X_input])
+        else:
+            X_pred = self.decoder(Z)
+        X_pred2 = self.auxdecoder(Z)
+        
+        # Compile VAE
+        auxmmdvae = Model(X_input, [X_pred, X_pred2], name=self.name)
+        optimizer = Adam(learning_rate=learning_rate, clipnorm=clipnorm)
+        auxmmdvae.compile(optimizer=optimizer, loss=[self.mmdvae_loss, losses.mse_loss], 
+                      metrics={'decoder':losses.amino_accuracy},
+                      loss_weights=[1, self.lambda_])
+
+        return auxmmdvae
+
+
+
+
     def compileVAE(self, input_dim, learning_rate=1e-4, clipnorm=100.):
         '''Compile the VAE from base models'''
 
@@ -156,6 +182,9 @@ class ProtVAE():
             
         elif self.name == 'auxvae':
             self.vae = self._compileAUXVAE(input_dim, learning_rate, clipnorm)
+            
+        elif self.name == 'auxmmdvae':
+            self.vae = self._compileAUXMMDVAE(input_dim, learning_rate, clipnorm)
     
     
     

@@ -21,6 +21,7 @@ AMINO_LETTERS = list('-ACDEFGHIKLMNPQRSTVWYX') # Non-canonical (X), gap/stop cha
 NONCANONICAL = list('BJOUZ')
 AMINO_DICT = {char:num for (num,char) in enumerate(AMINO_LETTERS)}
 REVERSE_AMINO_DICT = {num:char for (num,char) in enumerate(AMINO_LETTERS)}
+
 MMSEQS_EXEC = '/home/jgado/condaenvs/tfgpu/bin/mmseqs'
 MAFFT_EXEC = '/usr/local/bin/mafft'
 HMMBUILD_EXEC = '/projects/bpms/jgado/hmmer-3.2.1/src/hmmbuild'
@@ -205,9 +206,8 @@ def extract_sequences(fastafile, seqids, outfile):
     
     
 def mafft_MSA(read_path, write_path):
-    '''Align sequences in fasta file (read_path) with MAFFT (executable in Mafft_exe). Write
-    aligned sequences to write_path.
-    '''
+    '''Align sequences in fasta file (read_path) with MAFFT (executable in MAFFT_EXE) and
+    write aligned sequences to write_path.'''
     
     # Align sequences    
     [heads1, sequences1] = read_fasta(read_path)
@@ -388,8 +388,9 @@ def reverse_one_hot_encode_sequence(array):
 
 
 def cluster_sequences(fastafile, clusterfasta, clusterfile='clusters.txt', minseqid=0.7, 
-                      maxseqs=1000, maxevalue=1e-3, cluster_mode=2, seqidmode=1,
-                      write_cluster_data=False, delete_temp_files=True):
+                      maxseqs=1000, maxevalue=1e-3, cluster_mode=2, cover=0.5, cov_mode=1, 
+                      seqidmode=1, sensitivity=7.5, write_cluster_data=False, 
+                      save_rep_seqs=True, delete_temp_files=True):
     '''Cluster sequences in a fasta file to clusters with minimum sequence identity of 
     minseqid. Accession codes of sequences in each cluster are written to clusterfile in 
     a fasta-like format'''
@@ -402,14 +403,15 @@ def cluster_sequences(fastafile, clusterfasta, clusterfile='clusters.txt', minse
     # Cluster database
     subprocess.call(f'{MMSEQS_EXEC} cluster ./tempdir/seqdb ./tempdir/seqdb_cluster '\
                     f'./tempdir/tmp --min-seq-id {minseqid}  --max-seqs {maxseqs} '\
-                    f'-e {maxevalue} --cluster-mode {cluster_mode} '\
-                    f'--seq-id-mode {seqidmode}', shell=True)
+                    f'-e {maxevalue} --cluster-mode {cluster_mode} --cov-mode {cov_mode} '\
+                    f'-c {cover} --seq-id-mode {seqidmode} -s {sensitivity}', shell=True)
     
     # Extract representative sequences
-    subprocess.call(f'{MMSEQS_EXEC} createsubdb ./tempdir/seqdb_cluster ./tempdir/seqdb '\
-                    f'./tempdir/seqdb_rep', shell=True)
-    subprocess.call(f'{MMSEQS_EXEC} convert2fasta ./tempdir/seqdb_rep {clusterfasta}',
-                    shell=True)
+    if save_rep_seqs:
+        subprocess.call(f'{MMSEQS_EXEC} createsubdb ./tempdir/seqdb_cluster '\
+                        f'./tempdir/seqdb ./tempdir/seqdb_rep', shell=True)
+        subprocess.call(f'{MMSEQS_EXEC} convert2fasta ./tempdir/seqdb_rep {clusterfasta}',
+                        shell=True)
         
     # Write cluster data in fasta-like format
     if write_cluster_data:
@@ -568,6 +570,21 @@ def parse_hmm_tabout(tabout):
     data = pd.DataFrame(data)
     
     return data
+
+
+
+
+
+
+def array_to_csv(array, csv):
+    '''Write data in a 1D array to a csv file'''
+    
+    with open(csv, 'a') as file:
+        for item in array:
+            file.write(f'{item}\n')
+    
+    return
+        
                 
     
     

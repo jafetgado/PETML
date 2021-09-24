@@ -38,9 +38,14 @@ utils.write_fasta(allheads, allseqs, allfasta)  # 555,290 sequences
 # Remove redundant sequences 
 #=============================#
 
-# Cluster with MMSEQS at 99% identity
+# Cluster with MMSEQS at 99% identity (302,087 seqs)
 allfasta = './experiment/preprocessing/data/all_hmmsearch_seqs.fasta'
 clusterfasta = './experiment/preprocessing/data/hmmsearch99.fasta'
 _ = utils.cluster_sequences(fastafile=allfasta, clusterfasta=clusterfasta, minseqid=0.99, 
-                            maxseqs=500000, maxevalue=10, cluster_mode=2, seqidmode=1,
-                            write_cluster_data=False, delete_temp_files=False)
+                            maxseqs=500000, maxevalue=10, cluster_mode=2, cov_mode=1, 
+                            seqidmode=1, write_cluster_data=False,
+                            delete_temp_files=True)
+
+
+
+
