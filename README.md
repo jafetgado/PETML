@@ -6,7 +6,7 @@ This repository contains all scripts and data for experiments, design, and analy
 in building the deep-learning package, DeepPETase.
 
 
-
+-------------------
 #### File/directory structure
 -------------------
 
