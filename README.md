@@ -9,10 +9,12 @@ in building the deep-learning package, DeepPETase.
 ## File/directory structure
 ---------------------
 
-- `module/`: Contains lower-level python scripts including `utils.py` and `models.py`
-- `experiment/`: Contains scripts and data for experimental design of DeepPETase
+- Lower-level python scripts are in `module/` including `utils.py` and `models.py`.
+- `module/`: contains lower-level python scripts including `utils.py` and `models.py`
+- `experiment/`: contains scripts and data for experimental design of DeepPETase.
 - `experiment/python_scripts`: contains the high-level python scripts used in design. 
-These are 
+These are organized in sequential order of the experimental process.
+1. hmmsearch: 
 
 
 
