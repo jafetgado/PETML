@@ -16,9 +16,9 @@ For each step, python scripts are in `experiment/python_scripts`, bash scripts t
 HPC resources are in `experiment/bash_scripts`, the data used or generated are in 
 `experiment/data`, and stdout/stderr files are written to `experiment/stdout`
 
-    1\. hmmsearch: Retrieve PETase homologs from sequence databases by searching with HMM.
-    2\. preprocessing: Preprocess sequence data and prepare alignments for deep learning.
-    3\. hyperparameter_tuning: Optimize hyperparameters for the model (VAE & top model).
+*    1\. hmmsearch: Retrieve PETase homologs from sequence databases by searching with HMM.
+*    2\. preprocessing: Preprocess sequence data and prepare alignments for deep learning.
+*    3\. hyperparameter_tuning: Optimize hyperparameters for the model (VAE & top model).
     4\. training: Train the model using optimized hyperparameters.
     5\. finetuning: Fine-tune the model end to end with low learning rate.
 
