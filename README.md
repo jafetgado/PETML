@@ -14,7 +14,7 @@ in building the deep-learning package, DeepPETase.
 - `experiment/`: contains scripts and data for experimental design of DeepPETase.
 - `experiment/python_scripts`: contains the high-level python scripts used in design. 
 These are organized in sequential order of the experimental process.
-1. hmmsearch: 
+- 1. hmmsearch: 
 
 
 
