@@ -6,7 +6,8 @@ This repository contains all scripts and data for experiments, design, and analy
 in building the deep-learning package, DeepPETase.
 
 
--------------------
+
+
 #### File/directory structure
 -------------------
 
@@ -21,11 +22,11 @@ These are organized in sequential steps of the experimental process as described
     4. training: Train the model using optimized hyperparameters.
     5. finetuning: Fine-tune the model end to end with lower learning rate.
 
-For each step, 
-python scripts are in `experiment/python_scripts`, 
-bash scripts to utilize HPC resources are in `experiment/bash_scripts`, 
-the data used or generated are in `experiment/data`,
-and stdout/stderr files are written to `experiment/stdout`
+For each step, \
+python scripts are in `experiment/python_scripts`, \
+bash scripts to utilize HPC resources are in `experiment/bash_scripts`, \
+the data used or generated are in `experiment/data`,\
+and stdout/stderr files are written to `experiment/stdout`\
     
 `experiment/data/labels/`: contains both sequence data and activity measurements for
 379 PETases from 23 studies
