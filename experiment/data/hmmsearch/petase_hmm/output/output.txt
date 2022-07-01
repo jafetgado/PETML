@@ -1,0 +1,408 @@
+# hmmsearch :: search profile(s) against a sequence database
+# HMMER 3.2.1 (June 2018); http://hmmer.org/
+# Copyright (C) 2018 Howard Hughes Medical Institute.
+# Freely distributed under the BSD open source license.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# query HMM file:                  ./experiment/hmmsearch/data/petase-hmm/hmm.txt
+# target sequence database:        ./experiment/hmmsearch/data/petase-hmm/current_petases.fasta
+# output directed to file:         ./experiment/hmmsearch/data/petase-hmm/tempdir/output.txt
+# MSA of all hits saved to file:   ./experiment/hmmsearch/data/petase-hmm/tempdir/aln.sto
+# per-seq hits tabular output:     ./experiment/hmmsearch/data/petase-hmm/tempdir/tblout.txt
+# show alignments in output:       no
+# sequence reporting threshold:    score >= 0
+# domain reporting threshold:      score >= 0
+# sequence inclusion threshold:    score >= 0
+# domain inclusion threshold:      score >= 0
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query:       current_petases_msa  [M=332]
+Scores for complete sequences (score includes all domains):
+   --- full sequence ---   --- best 1 domain ---    -#dom-
+    E-value  score  bias    E-value  score  bias    exp  N  Sequence      Description
+    ------- ------ -----    ------- ------ -----   ---- --  --------      -----------
+   1.3e-138  454.0   0.2   1.5e-138  453.8   0.2    1.0  1  TfH            
+   1.3e-137  450.7   0.1   1.6e-137  450.4   0.1    1.0  1  TfCut1         
+     1e-136  447.7   0.1   1.2e-136  447.5   0.1    1.0  1  Tf_0882        
+   1.7e-136  447.0   0.1     2e-136  446.8   0.1    1.0  1  BTA2           
+   4.7e-136  445.6   0.1   5.3e-136  445.4   0.1    1.0  1  Thc_cut1       
+   3.2e-135  442.8   0.0   3.6e-135  442.7   0.0    1.0  1  TfCut2         
+   3.4e-135  442.8   0.0   3.8e-135  442.6   0.0    1.0  1  PETcan716      
+   6.2e-135  441.9   0.0   6.8e-135  441.8   0.0    1.0  1  Thf42_cut1     
+   1.4e-134  440.7   0.1   1.6e-134  440.6   0.1    1.0  1  PETcan702      
+   1.7e-134  440.5   0.0   1.9e-134  440.3   0.0    1.0  1  Thc_cut2       
+   2.1e-134  440.2   0.0   2.3e-134  440.0   0.0    1.0  1  PETcan701      
+   2.6e-133  436.6   0.3   3.1e-133  436.3   0.3    1.0  1  Est119         
+   1.6e-132  433.9   0.1   1.8e-132  433.8   0.1    1.0  1  PETcan708      
+     6e-132  432.1   0.1   6.7e-132  431.9   0.1    1.0  1  Tha_cut1       
+   8.2e-132  431.6   0.2   9.1e-132  431.5   0.2    1.0  1  PHL2           
+   1.2e-131  431.1   0.1   1.3e-131  431.0   0.1    1.0  1  PHL1           
+   5.3e-131  429.0   0.1   5.9e-131  428.8   0.1    1.0  1  Thh_Est        
+   1.9e-130  427.2   1.2   2.3e-130  426.9   1.2    1.0  1  PETcan607-nSP  
+   4.3e-130  426.0   0.0   4.7e-130  425.9   0.0    1.0  1  Tcur1278       
+   2.1e-129  423.7   0.3   2.4e-129  423.6   0.3    1.0  1  PETcan711      
+   7.2e-129  422.0   0.3     8e-129  421.8   0.3    1.0  1  PHL3           
+   2.7e-128  420.1   0.3   3.1e-128  419.9   0.3    1.0  1  PHL7           
+   3.2e-128  419.8   0.2   3.5e-128  419.7   0.2    1.0  1  Tcur0390       
+   1.9e-127  417.3   0.1   2.1e-127  417.1   0.1    1.0  1  Cut190         
+     5e-124  406.0   0.1   5.6e-124  405.9   0.1    1.0  1  PETcan606      
+   8.2e-122  398.8   0.1   9.1e-122  398.6   0.1    1.0  1  PETcan611      
+   7.7e-121  395.6   0.9   9.1e-121  395.3   0.9    1.0  1  PET12          
+   5.4e-120  392.8   0.8   6.4e-120  392.6   0.8    1.0  1  LCC            
+   9.7e-120  392.0   0.0   1.1e-119  391.8   0.0    1.0  1  PET2           
+     1e-118  388.6   0.0   1.2e-118  388.3   0.0    1.0  1  Pe-H           
+   1.4e-118  388.1   0.1   1.6e-118  388.0   0.1    1.0  1  PHL5           
+   1.5e-118  388.0   0.3   1.7e-118  387.9   0.3    1.0  1  PETcan405      
+   1.9e-118  387.7   0.0   2.1e-118  387.6   0.0    1.0  1  PETcan403      
+   2.1e-118  387.5   0.1   2.4e-118  387.4   0.1    1.0  1  PHL6           
+   4.1e-117  383.3   0.2   4.5e-117  383.2   0.2    1.0  1  PHL4           
+   5.2e-117  383.0   0.0   5.8e-117  382.8   0.0    1.0  1  PET5           
+   3.2e-115  377.1   0.6   3.5e-115  377.0   0.6    1.0  1  BhrPETase      
+   1.4e-114  375.0   0.9   1.6e-114  374.8   0.9    1.0  1  PETcan504      
+   6.8e-114  372.7   4.1   7.7e-114  372.6   4.1    1.0  1  IsPETase       
+   9.3e-111  362.4   2.6     1e-110  362.3   2.6    1.0  1  PETcan503      
+   3.1e-109  357.4   0.8   3.4e-109  357.3   0.8    1.0  1  PETcan406      
+   1.9e-107  351.5   0.0   2.1e-107  351.4   0.0    1.0  1  PET6           
+   9.7e-101  329.5   2.0   1.2e-100  329.2   2.0    1.1  1  PETcan407      
+    5.7e-82  267.8   0.0    6.7e-82  267.6   0.0    1.0  1  PET27          
+      1e-80  263.7   0.8    1.3e-80  263.3   0.8    1.1  1  PET30          
+    2.6e-76  249.2   1.4      3e-76  249.0   1.4    1.0  1  PETcan409      
+    2.4e-74  242.8   0.3    2.9e-74  242.5   0.3    1.0  1  PETcan412      
+    7.3e-51  165.6   0.0    8.5e-51  165.3   0.0    1.0  1  PETcan202      
+    3.4e-48  156.8   2.9    4.3e-48  156.5   2.9    1.0  1  PETcan301      
+    3.9e-47  153.3   0.0    4.7e-47  153.0   0.0    1.0  1  PETcan211      
+    2.9e-45  147.1   0.0    3.3e-45  147.0   0.0    1.0  1  PETcan214      
+    3.3e-44  143.7   0.0    3.9e-44  143.5   0.0    1.0  1  PETcan204      
+    1.7e-38  124.9   0.0    2.1e-38  124.6   0.0    1.0  1  Cbotu_EstA     
+    3.4e-35  114.1   0.0      4e-35  113.8   0.0    1.0  1  PETcan305      
+    2.3e-32  104.7   0.0    2.7e-32  104.5   0.0    1.1  1  BsEstB         
+    3.8e-29   94.2   0.0    4.5e-29   93.9   0.0    1.0  1  PETcan307      
+    1.7e-27   88.7   0.7      2e-27   88.5   0.7    1.0  1  PETcan102      
+    3.8e-22   71.2   0.0    7.1e-22   70.3   0.0    1.4  1  PETcan101      
+    7.5e-12   37.3   0.5    9.4e-12   37.0   0.5    1.2  1  Sub1           
+    3.7e-10   31.8   0.0    4.3e-10   31.5   0.0    1.1  1  HiC            
+    4.1e-10   31.6   0.2    8.5e-10   30.6   0.2    1.5  1  FsC            
+
+
+Domain annotation for each sequence:
+>> TfH  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  453.8   0.2  1.5e-138  1.5e-138      11     302 ..      18     300 ..       4     301 .] 0.92
+
+>> TfCut1  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  450.4   0.1  1.6e-137  1.6e-137      11     302 ..      36     318 ..      22     319 .] 0.92
+
+>> Tf_0882  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  447.5   0.1  1.2e-136  1.2e-136      14     302 ..      39     318 ..      23     319 .] 0.92
+
+>> BTA2  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  446.8   0.1    2e-136    2e-136      20     302 ..      21     300 ..       4     301 .] 0.92
+
+>> Thc_cut1  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  445.4   0.1  5.3e-136  5.3e-136      37     302 ..       1     261 [.       1     262 [] 0.99
+
+>> TfCut2  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  442.7   0.0  3.6e-135  3.6e-135      38     302 ..       1     260 [.       1     261 [] 0.99
+
+>> PETcan716  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  442.6   0.0  3.8e-135  3.8e-135      38     303 ..       1     261 [.       1     264 [] 0.99
+
+>> Thf42_cut1  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  441.8   0.0  6.8e-135  6.8e-135      37     302 ..       1     261 [.       1     262 [] 0.99
+
+>> PETcan702  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  440.6   0.1  1.6e-134  1.6e-134      37     302 ..       1     261 [.       1     262 [] 0.99
+
+>> Thc_cut2  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  440.3   0.0  1.9e-134  1.9e-134      37     302 ..       1     261 [.       1     262 [] 0.99
+
+>> PETcan701  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  440.0   0.0  2.3e-134  2.3e-134      38     302 ..       1     260 [.       1     261 [] 0.99
+
+>> Est119  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  436.3   0.3  3.1e-133  3.1e-133       9     302 ..      18     299 ..       5     300 .] 0.93
+
+>> PETcan708  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  433.8   0.1  1.8e-132  1.8e-132      38     302 ..       1     260 [.       1     261 [] 0.99
+
+>> Tha_cut1  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  431.9   0.1  6.7e-132  6.7e-132      37     302 ..       1     261 [.       1     262 [] 0.99
+
+>> PHL2  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  431.5   0.2  9.1e-132  9.1e-132      37     302 ..       1     259 [.       1     260 [] 0.99
+
+>> PHL1  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  431.0   0.1  1.3e-131  1.3e-131      37     302 ..       1     259 [.       1     260 [] 0.99
+
+>> Thh_Est  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  428.8   0.1  5.9e-131  5.9e-131      37     302 ..       1     261 [.       1     262 [] 0.99
+
+>> PETcan607-nSP  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  426.9   1.2  2.3e-130  2.3e-130      12     304 ..      26     309 ..      17     310 .] 0.94
+
+>> Tcur1278  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  425.9   0.0  4.7e-130  4.7e-130      14     303 ..      10     288 ..       1     289 [] 0.94
+
+>> PETcan711  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  423.6   0.3  2.4e-129  2.4e-129      38     302 ..       1     259 [.       1     260 [] 0.99
+
+>> PHL3  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  421.8   0.3    8e-129    8e-129      37     302 ..       1     258 [.       1     259 [] 0.99
+
+>> PHL7  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  419.9   0.3  3.1e-128  3.1e-128      37     302 ..       1     258 [.       1     259 [] 0.99
+
+>> Tcur0390  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  419.7   0.2  3.5e-128  3.5e-128      10     302 ..       7     291 ..       1     292 [] 0.94
+
+>> Cut190  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  417.1   0.1  2.1e-127  2.1e-127       4     302 ..      12     303 ..       9     304 .] 0.97
+
+>> PETcan606  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  405.9   0.1  5.6e-124  5.6e-124      39     303 ..       2     260 ..       1     262 [] 0.99
+
+>> PETcan611  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  398.6   0.1  9.1e-122  9.1e-122      39     302 ..       2     259 ..       1     260 [] 0.98
+
+>> PET12  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  395.3   0.9  9.1e-121  9.1e-121      20     302 ..      18     297 ..       6     298 .] 0.94
+
+>> LCC  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  392.6   0.8  6.4e-120  6.4e-120       6     299 ..       6     287 ..       2     293 .] 0.95
+
+>> PET2  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  391.8   0.0  1.1e-119  1.1e-119       4     302 ..       5     307 ..       2     308 .] 0.96
+
+>> Pe-H  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  388.3   0.0  1.2e-118  1.2e-118      12     302 ..      11     303 ..       3     304 .] 0.95
+
+>> PHL5  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  388.0   0.1  1.6e-118  1.6e-118      37     302 ..       1     256 [.       1     257 [] 0.99
+
+>> PETcan405  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  387.9   0.3  1.7e-118  1.7e-118      31     303 ..       7     272 ..       1     274 [] 0.97
+
+>> PETcan403  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  387.6   0.0  2.1e-118  2.1e-118      29     302 ..       3     282 ..       1     283 [] 0.97
+
+>> PHL6  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  387.4   0.1  2.4e-118  2.4e-118      37     302 ..       1     256 [.       1     257 [] 0.99
+
+>> PHL4  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  383.2   0.2  4.5e-117  4.5e-117      37     302 ..       1     256 [.       1     257 [] 0.99
+
+>> PET5  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  382.8   0.0  5.8e-117  5.8e-117       4     302 ..       2     309 ..       1     310 [] 0.95
+
+>> BhrPETase  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  377.0   0.6  3.5e-115  3.5e-115       6     300 ..       6     288 ..       1     293 [] 0.95
+
+>> PETcan504  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  374.8   0.9  1.6e-114  1.6e-114      40     302 ..       3     268 ..       1     269 [] 0.96
+
+>> IsPETase  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  372.6   4.1  7.7e-114  7.7e-114      16     300 ..      17     287 ..       2     290 .] 0.92
+
+>> PETcan503  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  362.3   2.6    1e-110    1e-110      39     302 ..       2     257 ..       1     258 [] 0.98
+
+>> PETcan406  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  357.3   0.8  3.4e-109  3.4e-109      11     302 ..       6     303 ..       1     304 [] 0.95
+
+>> PET6  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  351.4   0.0  2.1e-107  2.1e-107      13     302 ..      11     295 ..       1     297 [] 0.93
+
+>> PETcan407  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  329.2   2.0  1.2e-100  1.2e-100      38     318 ..       2     283 ..       1     326 [. 0.95
+
+>> PET27  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  267.6   0.0   6.7e-82   6.7e-82      56     331 ..      36     364 .]       6     364 .] 0.89
+
+>> PET30  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  263.3   0.8   1.3e-80   1.3e-80      56     331 ..      36     365 ..      23     366 .] 0.90
+
+>> PETcan409  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  249.0   1.4     3e-76     3e-76      55     292 ..      19     260 ..       4     268 .] 0.94
+
+>> PETcan412  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  242.5   0.3   2.9e-74   2.9e-74      54     290 ..      31     271 ..       2     281 .. 0.91
+
+>> PETcan202  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  165.3   0.0   8.5e-51   8.5e-51      19     332 .]       2     372 ..       1     372 [. 0.89
+
+>> PETcan301  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  156.5   2.9   4.3e-48   4.3e-48      75     243 ..      22     198 ..       3     202 .. 0.93
+
+>> PETcan211  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  153.0   0.0   4.7e-47   4.7e-47      77     269 ..      16     258 ..       4     261 .. 0.94
+
+>> PETcan214  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  147.0   0.0   3.3e-45   3.3e-45      63     276 ..       3     228 ..       1     237 [. 0.93
+
+>> PETcan204  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  143.5   0.0   3.9e-44   3.9e-44      76     273 ..       9     241 .]       2     241 .] 0.94
+
+>> Cbotu_EstA  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  124.6   0.0   2.1e-38   2.1e-38      43     332 .]      22     450 ..       2     450 .. 0.91
+
+>> PETcan305  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  113.8   0.0     4e-35     4e-35      60     223 ..       7     231 .]       2     231 .] 0.96
+
+>> BsEstB  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  104.5   0.0   2.7e-32   2.7e-32      13     277 ..       1     390 [.       1     463 [. 0.87
+
+>> PETcan307  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   93.9   0.0   4.5e-29   4.5e-29     143     274 ..      10     174 ..       2     177 .] 0.89
+
+>> PETcan102  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   88.5   0.7     2e-27     2e-27      11     198 ..       4     277 ..       1     288 [. 0.84
+
+>> PETcan101  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   70.3   0.0   7.1e-22   7.1e-22      78     222 ..       5     262 ..       4     290 .. 0.84
+
+>> Sub1  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   37.0   0.5   9.4e-12   9.4e-12     130     222 ..      53     163 ..       9     180 .. 0.80
+
+>> HiC  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   31.5   0.0   4.3e-10   4.3e-10     136     222 ..      61     166 ..      21     181 .. 0.86
+
+>> FsC  
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !   30.6   0.2   8.5e-10   8.5e-10      59     222 ..       8     180 ..       2     193 .. 0.84
+
+
+
+Internal pipeline statistics summary:
+-------------------------------------
+Query model(s):                            1  (332 nodes)
+Target sequences:                         61  (17270 residues searched)
+Passed MSV filter:                        61  (1); expected 1.2 (0.02)
+Passed bias filter:                       61  (1); expected 1.2 (0.02)
+Passed Vit filter:                        61  (1); expected 0.1 (0.001)
+Passed Fwd filter:                        61  (1); expected 0.0 (1e-05)
+Initial search space (Z):                 61  [actual number of targets]
+Domain search space  (domZ):              61  [number of targets reported over threshold]
+# CPU time: 0.12u 0.00s 00:00:00.12 Elapsed: 00:00:00.11
+# Mc/sec: 48.82
+//
+# Alignment of 61 hits satisfying inclusion thresholds saved to: ./experiment/hmmsearch/data/petase-hmm/tempdir/aln.sto
+[ok]
