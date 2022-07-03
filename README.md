@@ -25,6 +25,7 @@ These are organized in sequential steps of the experimental process as described
 For each step, python scripts are in `experiment/python_scripts`, bash scripts to utilize 
 HPC resources are in `experiment/bash_scripts`, the data used or generated are in 
 `experiment/data`, and stdout & stderr files are written to `experiment/stdout`.
+
 Perfomance evaluation data in `experiment/data/training/performance` and 
 `experiment/data/finetuning/performance` are presented as average values over 3-fold
 cross-validation (column 0) and standard deviation (column 1).
