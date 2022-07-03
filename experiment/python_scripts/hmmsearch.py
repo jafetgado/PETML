@@ -20,7 +20,7 @@ from module import utils
 
 
 #============================#
-# HMMER/MSA executables
+# Path to executable
 #============================#
 
 hmmbuild_exec = '/projects/bpms/jgado/hmmer-3.2.1/src/hmmbuild'
@@ -33,7 +33,7 @@ mafft_exec = '/usr/local/bin/mafft'
 
 
 #================================================================#
-# Build PETase-HMM from MSA of experimentally verified PETases
+# Build PETase-HMM from MSA of 61 experimentally verified PETases
 #================================================================#
 
 # Align sequences
@@ -56,9 +56,9 @@ _ = utils.hmmsearch_fxn(hmmfile, seqfile, hmmsearch_exec, threshold=0,
 
 
 
-#========================================================================================#
-# Search PETase-HMM against 1.6 billion sequences in NCBI/MGNify/JGI sequences with HPC
-#========================================================================================#
+#==================================================================================#
+# Search PETase-HMM against 1.6 billion sequences in NCBI/MGNify/JGI with HPC
+#==================================================================================#
 
 
 threshold = 100 

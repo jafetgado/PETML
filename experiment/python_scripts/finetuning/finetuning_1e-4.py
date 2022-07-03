@@ -1,5 +1,5 @@
 """
-End-to-end finetuning of deepPETase (encoder + top linear/rank model)
+End-to-end finetuning of deepPETase (encoder + top model)
 """
 
 
@@ -62,7 +62,7 @@ def buildDeepPETase(i=0, learning_rate=1e-5):
     vaepath = './experiment/data/training/models/petvae.h5'
     vae.VaeModel.load_weights(vaepath)
     
-    # Build top linear model with optimal weights
+    # Build top model with optimal weights
     top_model = models.buildLinearTopModel(input_shape=96,
                                            dropout=0.0,
                                            regfactor=1e-6)
@@ -74,15 +74,12 @@ def buildDeepPETase(i=0, learning_rate=1e-5):
                                                       encoder_model=vae.EncoderModel, 
                                                       top_model=top_model)
     
-    # Build pairwise rank model from combined model
+    # Build full pairwise ranking model from combined model
     deepPETase = models.buildRankModel(score_model=combined_model,
                                        input_shape=(437,21),
                                        learning_rate=learning_rate,
                                        name=f'deepPETase{i}')
     return deepPETase
-    
-
-
 
 
 
@@ -95,29 +92,28 @@ def buildDeepPETase(i=0, learning_rate=1e-5):
 # Prepare labeled data 
 #========================#
 
-# Sequence data
+# Sequence data (aligned to VAE MSA with positions haveing >95% gaps dropped)
 datapath = './experiment/data/preprocessing'
-heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') # Sequences aligned to VAE MSA
+heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') 
 Xlabel = np.array([utils.one_hot_encode_sequence(seq) for seq in seqs],
-                  dtype=np.int32) # Shape is (batch_size, L, 21)
-Xlabel = Xlabel[:,:,:-1]
+                  dtype=np.int32) # Shape is (batch_size, num_res, 21)
+Xlabel = Xlabel[:,:,:-1]  # Exclude 'X' character at -1 index
 
 
 # Activity (labeled) datasets
-#dflabel = pd.read_csv('experiment/data/labels/datasets.csv', index_col=0)
 dflabel = pd.read_excel('experiment/data/labels/datasets.xlsx', index_col=0)
 dflabel.index = [item.replace(',','').replace(' ','_') for item in dflabel.index]
 
 
-# Empty dictionary/lists for storing 5fold CV data
-rawdata = {}  # (X, y, ylog) data for all 379 sequences from 23 studies
+# Empty dictionary/arrays for storing cross-validation (CV) data
+rawdata = {}  # (X, y) data for all 379 sequences from 23 studies
 pairdata = {} # Pairwise data for rank prediction, all n(n-1)/2 pairs 
 X1s = np.zeros((0, 437, 21))   # 1st sequence in pair
 X2s = np.zeros((0, 437, 21))   # 2nd sequence in pair
 weights = np.zeros(0,)         # Sample weights for each pair
 pair_names = np.array([], dtype=object)  # Unique names for each pair
-yints = np.zeros(0,)                     # Binary relative activity (a(X2) > a(X1))
-dataset_names = np.array([], dtype=object) # Names of study (23) to which pair belongs
+yints = np.zeros(0,)                     # Indicator function values, i.e I(a(X2) > a(X1))
+dataset_names = np.array([], dtype=object) # Names of study (23) to which each pair belongs
 
 
 
@@ -198,9 +194,9 @@ assert len(X1s) == len(X2s) == len(weights) == len(yints) == len(pair_names) == 
 
 
 
-#=====================================================================#
-# Evaluate performance of fine-tuning with repeated cross-validation
-#=====================================================================#
+#===================================================#
+# Evaluate performance of fine-tuning with LOGOCV
+#===================================================#
 
 
 # Empty dictionaries to store model performance/results
@@ -210,13 +206,13 @@ rhos_heldout, ndcgs_heldout = {}, {}
 
 
 
-# Repeated five-fold cross validation (repeat for each dataset)
+# Leave-group-out cross validation to train/test top model on VAE latent space
 '''
 For each study/dataset, sequences from that study are excluded as a separate held-out
-set. The remaining data is randomly split into 5 folds for cross validation. Five models
+set. The remaining data is randomly split into 5 folds for cross validation. Three models
 are trained with the train/test plits obtained from the folds, and the performance of
-an ensemble of the 5 models is evaluated on the separate held-out set. Hence, the 
-evaluation routine is a 23 x 5-fold cross-validation.
+an ensemble of the 3 models is evaluated on the separate held-out set. Hence, the 
+evaluation routine is a 23 x 3-fold cross-validation.
 '''
 
 for dataset in set(dataset_names):
@@ -300,7 +296,7 @@ for dataset in set(dataset_names):
         accuracies.append(accuracy)
 
     
-    # Apply ensemble of trained models to predict activity (regression) 
+    # Apply ensemble of trained models to predict activity (raw values) 
     # of held-out testing set
     X, y, ylog, names = rawdata[dataset]
     ypred = np.array([model.layers[2].predict(X).reshape(-1) for model in model_list])
@@ -326,7 +322,7 @@ for dataset in set(dataset_names):
     dfpred.to_csv(csvstore)
     
     
-    # Apply ensemble of trained models to predict pairwise rank (classification) 
+    # Apply ensemble of trained models to predict activity rank (pairwise classification) 
     # of held-out testing set
     xpair = [X1s[dataset_locs], X2s[dataset_locs]]
     ypair = yints[dataset_locs]

@@ -1,5 +1,5 @@
 """
-Train deepPETase (top linear/rank model on VAE latent space) with optimal hyperparameters
+Train deepPETase (top model on VAE latent space) with optimal hyperparameters
 """
 
 
@@ -72,33 +72,31 @@ vae.VaeModel.save(filepath=vaepath, save_format='h5')
 
 
 #=================================================================#
-# Prepare labeled data for supervised learning (top/rank model)
+# Prepare labeled data for supervised learning (top model)
 #=================================================================#
 
 # Sequence data
 datapath = './experiment/data/preprocessing'
 heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') # Sequences aligned to VAE MSA
 Xlabel = np.array([utils.one_hot_encode_sequence(seq) for seq in seqs],
-                  dtype=np.int32) # Shape is (batch_size, L, 21)
-Xlabel = Xlabel[:,:,:-1]
+                  dtype=np.int32) # Shape is (batch_size, num_res, 21)
+Xlabel = Xlabel[:,:,:-1] # Exclude 'X' character at -1 index
 
 
 # Activity (labeled) datasets
-#dflabel = pd.read_csv('experiment/data/labels/datasets.csv', index_col=0)
 dflabel = pd.read_excel('experiment/data/labels/datasets.xlsx', index_col=0)
 dflabel.index = [item.replace(',','').replace(' ','_') for item in dflabel.index]
 
 
-# Empty dictionary/lists for storing 5fold CV data
-rawdata = {}  # (X, y, ylog) data for all 379 sequences from 23 studies
+# Empty dictionary/arrays for storing cross-validation (CV) data
+rawdata = {}  # (X, y) data for all 379 sequences from 23 studies
 pairdata = {} # Pairwise data for rank prediction, all n(n-1)/2 pairs 
 X1s = np.zeros((0, 437, 21))   # 1st sequence in pair
 X2s = np.zeros((0, 437, 21))   # 2nd sequence in pair
 weights = np.zeros(0,)         # Sample weights for each pair
 pair_names = np.array([], dtype=object)  # Unique names for each pair
-yints = np.zeros(0,)                     # Binary relative activity (a(X2) > a(X1))
-dataset_names = np.array([], dtype=object) # Names of study (23) to which pair belongs
-
+yints = np.zeros(0,)                     # Indicator function values, i.e I(a(X2) > a(X1))
+dataset_names = np.array([], dtype=object) # Names of study (23) to which each pair belongs
 
 
 # Generate ML data for each dataset/study
@@ -176,9 +174,9 @@ assert len(X1s) == len(X2s) == len(weights) == len(yints) == len(pair_names) == 
     
 
 
-#=========================================================================#
-# Evaluate performance of top model on VAE with repeated cross-validation
-#=========================================================================#
+#======================================================#
+# Evaluate performance of top model on VAE with LOGOCV
+#======================================================#
 
 
 # Derive VAE latent representations (96-dim) for labeled sequence data
@@ -187,17 +185,17 @@ Z2 = vae.EncoderModel.predict(X2s)[0]
 
 
 # Empty dictionaries to store model performance/results
-mccs_val, accuracies_val = {}, {}  # 5-fold CV performance (classification/rank)
+mccs_val, accuracies_val = {}, {}  # 3-fold CV performance (classification)
 mccs_heldout, accuracies_heldout = {}, {}  # Held-out performance
 rhos_heldout, ndcgs_heldout = {}, {}
 
-# Repeated five-fold cross validation to train/test top model on VAE latent space
+# Train and evaluate top model with leave-one-group-out cross-validation (LOGOCV)
 '''
 For each study/dataset, sequences from that study are excluded as a separate held-out
-set. The remaining data is randomly split into 5 folds for cross validation. Five models
+set. The remaining data is randomly split into 3 folds for training. Three models
 are trained with the train/test plits obtained from the folds, and the performance of
-an ensemble of the 5 models is evaluated on the separate held-out set. Hence, the 
-evaluation routine is a 23 x 5-fold cross-validation.
+an ensemble of the 3 models is evaluated on the separate held-out set. Hence, the 
+evaluation routine is a 23 x 3-fold cross-validation.
 '''
 
 for dataset in set(dataset_names):
@@ -234,7 +232,7 @@ for dataset in set(dataset_names):
         testweights = weights[testlocs]
 
         
-        # Build pairwise rank model
+        # Build top (rank) model
         K.clear_session()
         tf.random.set_seed(0)
         np.random.seed(0)
@@ -247,7 +245,7 @@ for dataset in set(dataset_names):
                                           learning_rate=1e-2)
         
         
-        # Training callbacks for top rank model
+        # Training callbacks for top (rank) model
         top_checkpoint_path = 'experiment/data/training/checkpoints/top_checkpoint'
         top_checkpoint = ModelCheckpoint(filepath=top_checkpoint_path,
                                          save_weights_only=True,
@@ -267,7 +265,7 @@ for dataset in set(dataset_names):
         callbacks = [top_checkpoint, reducelr, earlystopping]
         
         
-        # Train rank model
+        # Train (rank) model
         history = rank_model.fit(x=Ztrain,
                                  y=ytrain,
                                  sample_weight=trainweights,
@@ -287,15 +285,14 @@ for dataset in set(dataset_names):
         accuracies.append(accuracy)
     
 
-    # Apply ensemble of trained models to predict activity (regression) 
-    # of held-out testing set
+    # Apply ensemble of trained models to predict raw activity values of testing set
     X, y, ylog, names = rawdata[dataset]
     Z = vae.EncoderModel.predict(X)[0]
     ypred = np.array([rank_model.layers[2].predict(Z).reshape(-1) \
                       for rank_model in rank_model_list])
         
     
-    # Average activity prediction (ensemble) of all models from each cross-validation fold
+    # Average activity prediction (ensemble) of all models from each fold
     ypred_mean = np.mean(ypred, axis=0)
     rho = spearmanr(ypred_mean, y)[0]
     rho_std = np.std([spearmanr(ypred[i,:], y)[0] for i in range(len(ypred))])
@@ -312,15 +309,14 @@ for dataset in set(dataset_names):
     
         
         
-    # Apply ensemble of trained models to predict pairwise rank (classification) 
-    # of held-out testing set
+    # Apply ensemble of trained models to predict pairwise rank of testing set
     Zpair = [Z1[dataset_locs], Z2[dataset_locs]]
     ypair = yints[dataset_locs]
     ypred_pair = np.array([rank_model.predict(Zpair).reshape(-1) \
                            for rank_model in rank_model_list])
     
         
-    # Average rank prediction (ensemble) of all models from each cross-validation fold
+    # Average rank prediction (ensemble) of all models from each fold
     ypred_pair_mean = np.mean(ypred_pair, axis=0)
     mcc2 = matthews_corrcoef(ypair, (ypred_pair_mean > 0.5).astype(int))
     mcc2_std = np.std([matthews_corrcoef(ypair, (ypred_pair[i,:] > 0.5).astype(int)) \
@@ -360,18 +356,16 @@ dfndcgs_heldout.to_csv(f'{csvpath}/ndcg_heldout.csv')
 
 
 
-
-
-#===============================================================#
-# Train top rank models (ensemble) with 5-fold cross validation
-#===============================================================#
+#=======================================================#
+# Train final top rank models (ensemble) with all data
+#=======================================================#
 
 #kf = KFold(n_splits=3, random_state=0, shuffle=True)
 kf = KFold(n_splits=3, random_state=0, shuffle=True)
 
 for icv,(trainlocs, testlocs) in enumerate(kf.split(Z1)):
     
-    print(f'\nTraining top linear model for fold {icv}\n')
+    print(f'\nTraining top model for fold {icv}\n')
     
     # Remove sequence pairs from training set that are in testing set by names
     test_pair_names = pair_names[testlocs]
@@ -420,7 +414,7 @@ for icv,(trainlocs, testlocs) in enumerate(kf.split(Z1)):
     callbacks = [top_checkpoint, reducelr, earlystopping]
     
     
-    # Train rank model
+    # Train top (rank) model
     history = rank_model.fit(x=Ztrain,
                              y=ytrain,
                              sample_weight=trainweights,
@@ -430,7 +424,7 @@ for icv,(trainlocs, testlocs) in enumerate(kf.split(Z1)):
                              batch_size=256,
                              callbacks=callbacks)     
         
-    # Save top model (linear) with optimal weights
+    # Save top (rank) model with optimal weights
     rank_model.load_weights(top_checkpoint_path)
     modelpath = 'experiment/data/training/models'
     rank_model.layers[2].save(f'{modelpath}/top_model_{icv}.h5', save_format='h5')

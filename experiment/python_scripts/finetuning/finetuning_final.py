@@ -1,5 +1,5 @@
 """
-End-to-end finetuning of deepPETase (encoder + top linear/rank model)
+End-to-end finetuning of deepPETase with optimal learning rate
 """
 
 
@@ -58,7 +58,7 @@ def buildDeepPETase(i=0, learning_rate=1e-5):
     vaepath = './experiment/data/training/models/petvae.h5'
     vae.VaeModel.load_weights(vaepath)
     
-    # Build top linear model with optimal weights
+    # Build top model with optimal weights
     top_model = models.buildLinearTopModel(input_shape=96,
                                            dropout=0.0,
                                            regfactor=1e-6)
@@ -70,7 +70,7 @@ def buildDeepPETase(i=0, learning_rate=1e-5):
                                                       encoder_model=vae.EncoderModel, 
                                                       top_model=top_model)
     
-    # Build pairwise rank model from combined model
+    # Build full pairwise ranking model from combined model
     deepPETase = models.buildRankModel(score_model=combined_model,
                                        input_shape=(437,21),
                                        learning_rate=learning_rate,
@@ -91,29 +91,28 @@ def buildDeepPETase(i=0, learning_rate=1e-5):
 # Prepare labeled data 
 #========================#
 
-# Sequence data
+# Sequence data (aligned to VAE MSA with positions haveing >95% gaps dropped)
 datapath = './experiment/data/preprocessing'
-heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') # Sequences aligned to VAE MSA
+heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') 
 Xlabel = np.array([utils.one_hot_encode_sequence(seq) for seq in seqs],
-                  dtype=np.int32) # Shape is (batch_size, L, 21)
-Xlabel = Xlabel[:,:,:-1]
+                  dtype=np.int32) # Shape is (batch_size, num_res, 21)
+Xlabel = Xlabel[:,:,:-1]  # Exclude 'X' character at -1 index
 
 
 # Activity (labeled) datasets
-#dflabel = pd.read_csv('experiment/data/labels/datasets.csv', index_col=0)
 dflabel = pd.read_excel('experiment/data/labels/datasets.xlsx', index_col=0)
 dflabel.index = [item.replace(',','').replace(' ','_') for item in dflabel.index]
 
 
-# Empty dictionary/lists for storing 5fold CV data
-rawdata = {}  # (X, y, ylog) data for all 379 sequences from 23 studies
+# Empty dictionary/arrays for storing cross-validation (CV) data
+rawdata = {}  # (X, y) data for all 379 sequences from 23 studies
 pairdata = {} # Pairwise data for rank prediction, all n(n-1)/2 pairs 
 X1s = np.zeros((0, 437, 21))   # 1st sequence in pair
 X2s = np.zeros((0, 437, 21))   # 2nd sequence in pair
 weights = np.zeros(0,)         # Sample weights for each pair
 pair_names = np.array([], dtype=object)  # Unique names for each pair
-yints = np.zeros(0,)                     # Binary relative activity (a(X2) > a(X1))
-dataset_names = np.array([], dtype=object) # Names of study (23) to which pair belongs
+yints = np.zeros(0,)                     # Indicator function values, i.e I(a(X2) > a(X1))
+dataset_names = np.array([], dtype=object) # Names of study (23) to which each pair belongs
 
 
 
@@ -191,7 +190,7 @@ assert len(X1s) == len(X2s) == len(weights) == len(yints) == len(pair_names) == 
 
  
 #======================================================#
-# Train deepPETase models 5-fold cross validation
+# Train deepPETase models 3-fold cross validation
 #======================================================#
 
 kf = KFold(n_splits=3, random_state=0, shuffle=True)
@@ -261,7 +260,7 @@ for icv,(trainlocs, testlocs) in enumerate(kf.split(X1s)):
 
 
 #======================================================================@
-# Combined trained models (5-fold CV) into a single ensemble model
+# Combined trained models (3-fold CV) into a single ensemble model
 #======================================================================@
 
 model_list = []

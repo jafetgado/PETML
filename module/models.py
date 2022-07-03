@@ -203,7 +203,7 @@ class VAE():
             if self.dropout > 0:
                 tensor = Dropout(self.dropout)(tensor)
         
-        # Mean, variance, and semi-supervised target
+        # Mean and variance of latent space
         Z_mean = Dense(units=self.latent_dim, activation=None, 
                        kernel_regularizer=self.l2reg, bias_regularizer=self.l2reg, 
                        name='mean_dense')(tensor)

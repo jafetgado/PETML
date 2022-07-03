@@ -1,5 +1,5 @@
 """
-Optimize hyperparameters for PETase VAE and top rank model
+Optimize hyperparameters for PETase VAE and top (rank) model
 """
 
 
@@ -76,36 +76,35 @@ assert len(Xtest) == len(test_hamming)
 
 
 
-#=================================================================#
-# Prepare labeled data for supervised learning (top rank model)
-#=================================================================#
+#===========================================================#
+# Prepare labeled data for supervised learning (top model
+#===========================================================#
 
-# Sequence data
-heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') # Sequences aligned to VAE MSA
+# Sequence data (aligned to VAE MSA with positions haveing >95% gaps dropped)
+heads, seqs = utils.read_fasta(f'{datapath}/label_msa_gapless.fasta') 
 Xlabel = np.array([utils.one_hot_encode_sequence(seq) for seq in seqs],
-                  dtype=np.int32) # Shape is (batch_size, L, 21)
-Xlabel = Xlabel[:,:,:-1]
+                  dtype=np.int32) # Shape is (batch_size, num_res, 21)
+Xlabel = Xlabel[:,:,:-1]  # Exclude 'X' character at -1 index
 
 
 # Activity (labeled) datasets
-#dflabel = pd.read_csv('experiment/data/labels/datasets.csv', index_col=0)
 dflabel = pd.read_excel('experiment/data/labels/datasets.xlsx', index_col=0)
 dflabel.index = [item.replace(',','').replace(' ','_') for item in dflabel.index]
 
 
-# Empty dictionary/lists for storing 5fold CV data
+# Empty dictionary/arrays for storing cross-validation (CV) data
 rawdata = {}  # (X, y) data for all 379 sequences from 23 studies
 pairdata = {} # Pairwise data for rank prediction, all n(n-1)/2 pairs 
 X1s = np.zeros((0, 437, 21))   # 1st sequence in pair
 X2s = np.zeros((0, 437, 21))   # 2nd sequence in pair
 weights = np.zeros(0,)         # Sample weights for each pair
 pair_names = np.array([], dtype=object)  # Unique names for each pair
-yints = np.zeros(0,)                     # Binary relative activity (a(X2) > a(X1))
-dataset_names = np.array([], dtype=object) # Names of study (23) to which pair belongs
+yints = np.zeros(0,)                     # Indicator function values, i.e I(a(X2) > a(X1))
+dataset_names = np.array([], dtype=object) # Names of study (23) to which each pair belongs
 
 
 
-# Generate ML data for each dataset/study
+# Generate pairwise ML data (X1, X2) from each dataset/study
 for dataset in dflabel.index:
    
     # Activity data
@@ -357,25 +356,25 @@ for i_, top_dropout in enumerate(dropouts):
     rhos = {}
     
     
-    # Repeated five-fold cross validation to train/test top model on VAE latent space
+    # Leave-group-out cross-validation (LOGOCV) to train/test top model on VAE latent space
     for dataset in set(dataset_names):
         
         print()
         print(dataset) # Dataset is the separate held-out test set
         
         
-        ''' 5x5-fold CV
-        5 repetitions of 5-fold cross validation. In each repetition, use a dataset/study
-        with at least 21 sequences (200 pairs) as held-out data. Randomly split the
-        remaining sequences to form into 5 folds. Train 5 models with the train/test 
-        splits obtained from the folds, and evaluate the performance of an ensemble of the
-        5 models on the held-out data. 
-        Studies with >21 sequences are 
+        ''' LOGOCV
+        To save time, use the largest 5 datasets for hyperparameter tuning, rather than all
+        23 datasets. These datasets are
         (1) Cui et al, 2021: 65 seqsuences
         (2) Erickson et al, 2022: 43 sequences
         (3) Zeng et al, 2022: 34 sequences
         (4) Nakamura et al, 2021: 24 sequences
         (5) Chen et al, 2021: 22 sequences
+        In each LOGOCV repetition, one of these 5 datasets as held-out test data. Randomly
+        split the remaining data to 3 folds. Train 3 models with the train/test 
+        splits obtained from the folds, and evaluate the performance of an ensemble of the
+        3 models on the held-out data. 
         '''
         
         # Skip if dataset/study has less than 200 pairs (< 21 sequences)
@@ -386,8 +385,7 @@ for i_, top_dropout in enumerate(dropouts):
     
     
         # Train top model with cross-validation
-        #kf = KFold(n_splits=5, random_state=0, shuffle=True)
-        kf = KFold(n_splits=3, random_state=0, shuffle=True)  # Use 3-fold CV to save time
+        kf = KFold(n_splits=3, random_state=0, shuffle=True)  
         rank_model_list = []
         
         for icv,(trainlocs, testlocs) in enumerate(kf.split(Z1)):
@@ -411,23 +409,24 @@ for i_, top_dropout in enumerate(dropouts):
             testweights = weights[testlocs]
     
             
-            # Build pairwise rank model
+            # Reproducibility
             K.clear_session()
             tf.random.set_seed(0)
             np.random.seed(0)
             random.seed(0)
             
-            # Score model is a linear top model on VAE latent space that returns a(X)
+            # Build top (rank) model
+            # Score model is a linear model on VAE latent space that returns a(X)
             score_model = models.buildLinearTopModel(input_shape=latent_dim,
                                                     dropout=top_dropout, 
                                                     regfactor=top_regfactor)
             
-            # Rank model is derived from score model and returns p(a(X2) > a(X1))
+            # Rank model is derived from score model and returns sigmoid(a(X2) - a(X1))
             rank_model = models.buildRankModel(score_model=score_model, 
                                                input_shape=latent_dim,
                                                learning_rate=top_learning_rate)
             
-            # Training callbacks for top rank model
+            # Training callbacks for top (rank) model
             top_checkpoint_path = f'{storepath}/checkpoints/top_tuning/top_checkpoint'
             top_checkpoint = ModelCheckpoint(filepath=top_checkpoint_path,
                                              save_weights_only=True,
@@ -447,7 +446,7 @@ for i_, top_dropout in enumerate(dropouts):
             callbacks = [top_checkpoint, reducelr, earlystopping]
             
             
-            # Train top rank model
+            # Train top (rank) model
             history = rank_model.fit(x=xtrain,
                                      y=ytrain,
                                      sample_weight=trainweights,
@@ -467,7 +466,7 @@ for i_, top_dropout in enumerate(dropouts):
             accuracy_store.append(accuracy)
         
         
-        # Apply ensemble of trained rank models to predict activity of held-out testing set
+        # Apply ensemble of trained top models to predict activity of held-out testing set
         X, y = rawdata[dataset]
         Z = vae.EncoderModel.predict(X)[0]
         ypred = np.array([rank_model.layers[2].predict(Z).reshape(-1) \
@@ -485,7 +484,7 @@ for i_, top_dropout in enumerate(dropouts):
         rhos[dataset] = rho  
         
     
-    # Average performance over all repetitions of 5-fold cross validation
+    # Average performance over all repetitions of 3-fold cross validation
     rhos = pd.Series(rhos)
     print(rhos)
     perfstore['rho_avg'] = rhos.mean()
@@ -516,4 +515,7 @@ for i_, top_dropout in enumerate(dropouts):
     perfstore = pd.DataFrame({0: perfstore}).transpose()
     allperf = pd.concat([allperf, perfstore], axis=0, ignore_index=True)
     allperf.to_csv(csvpath)
+
+
+print('\DONE!\n')
     

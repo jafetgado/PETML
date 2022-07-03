@@ -1,5 +1,5 @@
 # DeepPETase Design
-#### Predicting PET-hydrolase activity from protein sequence with semi-supervised learning
+### Predicting PET-hydrolase activity from protein sequence with semi-supervised learning
 
 
 This repository contains all scripts and data for experiments, design, and analyses
@@ -25,6 +25,9 @@ These are organized in sequential steps of the experimental process as described
 For each step, python scripts are in `experiment/python_scripts`, bash scripts to utilize 
 HPC resources are in `experiment/bash_scripts`, the data used or generated are in 
 `experiment/data`, and stdout & stderr files are written to `experiment/stdout`.
+Perfomance evaluation data in `experiment/data/training/performance` and 
+`experiment/data/finetuning/performance` are presented as average values over 3-fold
+cross-validation (column 0) and standard deviation (column 1).
     
 `experiment/data/labels/`: contains both sequence data and activity measurements for 379 
 PETases from 23 studies.

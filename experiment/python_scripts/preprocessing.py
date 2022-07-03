@@ -1,5 +1,5 @@
 """
-Prepare retrieved sequence data for machine learning
+Prepare sequence data for machine learning
 """
 
 
@@ -188,7 +188,7 @@ assert np.equal(heads_msa[train_idx[0]:train_idx[1]], np.array(heads_train)).any
 assert np.equal(heads_msa[test_idx[0]:test_idx[1]], np.array(heads_test)).any()
 
 
-# Exclude positions with occupancy < 5% (i.e. +95% of residues are gaps)
+# Exclude positions with occupancy < 5% (i.e. >95% gaps in the position)
 df = utils.fasta_to_df(msafasta)
 gapfreqs = [(df.iloc[:,i]=='-').values.sum() for i in range(df.shape[1])]
 gapfreqs = np.array(gapfreqs) / df.shape[0]
