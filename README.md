@@ -30,8 +30,8 @@ Perfomance evaluation data in `experiment/data/training/performance` and
 `experiment/data/finetuning/performance` are presented as average values over 3-fold
 cross-validation (column 0) and standard deviation (column 1).
     
-`experiment/data/labels/`: contains both sequence data and activity measurements for 379 
-PETases from 23 studies.
+Sequence data and activity measurements for 379 PETases from 23 studies are in 
+`experiment/data/labels/`.
 
 
 
