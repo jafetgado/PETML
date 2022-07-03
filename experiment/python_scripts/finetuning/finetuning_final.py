@@ -275,7 +275,7 @@ for icv in range(3):
 # Combine individual models
 input_shape = (437,21)
 X = tf.keras.layers.Input(input_shape, name='Seq1')
-y_list = [model_list[i](X) for i in range(5)]
+y_list = [model_list[i](X) for i in range(len(model_list))]
 y_average = tf.keras.layers.Average(name='average')(y_list)
 ensemble_model = tf.keras.Model(X, y_average, name='deepPETase_ensemble_model')
 
