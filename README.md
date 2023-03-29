@@ -1,4 +1,4 @@
-# DeepPETase Design
+# PETML
 ### Predicting PET-hydrolase activity from protein sequence with semi-supervised learning
 
 
