@@ -1,5 +1,5 @@
 # PETML
-### Predicting PET-hydrolase activity from protein sequence with semi-supervised learning
+### Predicting PET hydrolase activity with machine learning
 
 
 This repository contains all scripts and data for experiments, design, and analyses
