@@ -3,7 +3,7 @@
 
 
 This repository contains all scripts and data for experiments, design, and analyses
-in building the deep-learning package, PETML.
+in building the deep-learning package, DeepPETase.
 
 
 

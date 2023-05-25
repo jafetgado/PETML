@@ -1,0 +1,55 @@
+{
+  "build": "openmp_h429af6e_3",
+  "build_number": 3,
+  "channel": "https://conda.anaconda.org/conda-forge/osx-64",
+  "constrains": [
+    "openblas >=0.3.21,<0.3.22.0a0"
+  ],
+  "depends": [
+    "libgfortran 5.*",
+    "libgfortran5 >=11.3.0",
+    "llvm-openmp >=14.0.4"
+  ],
+  "extracted_package_dir": "/Users/jgado/anaconda3/pkgs/libopenblas-0.3.21-openmp_h429af6e_3",
+  "features": "",
+  "files": [
+    "lib/libopenblas.0.dylib",
+    "lib/libopenblasp-r0.3.21.dylib"
+  ],
+  "fn": "libopenblas-0.3.21-openmp_h429af6e_3.tar.bz2",
+  "license": "BSD-3-Clause",
+  "license_family": "BSD",
+  "link": {
+    "source": "/Users/jgado/anaconda3/pkgs/libopenblas-0.3.21-openmp_h429af6e_3",
+    "type": 1
+  },
+  "md5": "968c46aa7f4032c3f3873f3452ed4c34",
+  "name": "libopenblas",
+  "package_tarball_full_path": "/Users/jgado/anaconda3/pkgs/libopenblas-0.3.21-openmp_h429af6e_3.tar.bz2",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "lib/libopenblas.0.dylib",
+        "path_type": "softlink",
+        "sha256": "ef25b8db14896653bbf2fb7a12455efdf7f1456906d06cbf1670cfc1447783d1",
+        "size_in_bytes": 67389824
+      },
+      {
+        "_path": "lib/libopenblasp-r0.3.21.dylib",
+        "path_type": "hardlink",
+        "sha256": "ef25b8db14896653bbf2fb7a12455efdf7f1456906d06cbf1670cfc1447783d1",
+        "sha256_in_prefix": "ef25b8db14896653bbf2fb7a12455efdf7f1456906d06cbf1670cfc1447783d1",
+        "size_in_bytes": 67389824
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "a5a0b6ccef165ffb38e6a53e7b8808e33c77e081174315d2333ae93b593ae957",
+  "size": 10061114,
+  "subdir": "osx-64",
+  "timestamp": 1662063043308,
+  "track_features": "",
+  "url": "https://conda.anaconda.org/conda-forge/osx-64/libopenblas-0.3.21-openmp_h429af6e_3.tar.bz2",
+  "version": "0.3.21"
+}
