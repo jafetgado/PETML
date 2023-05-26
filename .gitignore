@@ -1,4 +1,5 @@
 **/.DS_Store
 module/__pycache__/
 env/
+petml/data/tmp
 gitcommands.sh

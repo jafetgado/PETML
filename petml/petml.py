@@ -5,17 +5,128 @@ PETML: predict PET hydrolase activity with machine learning
 
 
 
+
 import numpy as np
 import pandas as pd
 import subprocess
 import os
-import tensorflow as tf
-
-import deepPETase.utils as utils
-from deepPETase.generator import DataGenerator
-
+import joblib
+from sklearn.linear_model import LogisticRegression
+import petml.helper as helper
 
 
+import argparse
+import joblib
+import os
+import subprocess
+import sys
+
+sys.path.insert(1, './petml')
+
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+
+
+
+
+
+
+def parse_arguments():
+    '''Parse command-line  arguments'''
+    
+    parser = argparse.ArgumentParser(description="Predict PET hydrolase activity with ML")
+    
+    parser.add_argument('--seqfile', type=str, 
+                        help='Path to fasta file of sequences')
+    parser.add_argument('--outdir', type=str, default='./petml_output',
+                        help='Directory where output files will be written to')
+    parser
+    
+    
+    
+    
+    parser.add_argument('--fasta_path', type=str,  
+                        help='Path to fasta file of enzyme sequences')
+    parser.add_argument('--save_dir', type=str, default='./',
+                        help='Directory to which prediction results will be written')
+    parser.add_argument('--csv_name', type=str, default='prediction.csv', 
+                        help='Name of csv file to which prediction results will be written')
+    parser.add_argument('--aac_svr', type=int, default=0, 
+                        help='If 1, use the simple AAC-SVR model instead of EpHod')
+    parser.add_argument('--batch_size', type=int, default=8,
+                        help='Batch size used in inference')
+    parser.add_argument('--verbose', default=1, type=int,
+                        help='Whether to print out prediction progress to terminal')
+    parser.add_argument('--save_attention_weights', default=0, type=int,
+                        help="Whether to write light attention weights for each sequence")
+    parser.add_argument('--attention_mode', default='average', type=str,
+                        help="Either 'average' or 'max'. How to derive Lx1 weights from Lx1280 tensor")
+    parser.add_argument('--save_embeddings', default=0, type=int,
+                        help="Whether to save 2560-dim EpHod embeddings for each sequence")
+    args = parser.parse_args()
+
+    return args
+
+
+
+
+def print(*args, **kwargs):
+    '''Custom print function to always flush output when verbose'''
+
+    builtins.print(*args, **kwargs, flush=True)
+    
+
+
+
+#def main():
+    
+# Parse command line arguments
+args = parse_arguments()
+
+# Manage files and directories
+assert os.path.exists(args.seqfile), f"{args.seqfile} not found"
+if not os.path.exists(args.outdir):
+    os.makedirs(args.outdir)
+    
+
+# Get model files
+this_dir, this_filename = os.path.split(__file__)
+sourcedir = os.path.join(this_dir, 'data')
+b04_hmm = os.path.join(this_dir, 'data', 'unsupervised', 'jackhmmer_hmm_b04.txt')
+b04_fasta = os.path.join(this_dir, 'data', 'unsupervised', 'jackhmmer_seqs_b04_small.fasta')
+petase_hmm = os.path.join(this_dir, 'data', 'unsupervised', 'petase_hmm.txt')
+activesite_hmm = os.path.join(this_dir, 'data', 'unsupervised', 'active_site_hmm.txt')
+activesite_positions = os.path.join(this_dir, 'data', 'unsupervised', 'active_site_positions.csv')
+consensus_fasta = os.path.join(this_dir, 'data', 'unsupervised', 'jackhmmer_consensus_b04.fasta')
+
+
+# Get executables
+hmmsearch_exe = subprocess.check_output("which hmmsearch", shell=True, text=True).strip()
+mafft_exe = subprocess.check_output("which mafft", shell=True, text=True).strip()
+
+
+# Search sequences with evolutionary HMM (jackhmmer b04) to exclude flanking domains
+helper.search_with_HMM(seq_file=args.seqfile, 
+                       hmm_file=b04_hmm, 
+                       threshold=0, 
+                       outdir=args.outdir, 
+                       hmmsearch_exe=hmmsearch_exe)
+
+# Rename searched sequence file
+newseqfile = '{args.outdir}/sequences_hmmsearch.fasta'
+subprocess.check_output(f'mv {args.outdir}/aln_no_gaps.fasta {newseqfile}',
+                        shell=True) 
+
+
+# Align sequences by adding to evolutionary alignment (jackhmmer b04) 
+alnfile = '{args.outdir}/sequences_aligned.fasta'
+helper.align_with_MSA(seq_file=newseqfile, 
+                      msa_file=b04_fasta, 
+                      out_file=alnfile, 
+                      mafft_exe=mafft_exe)
 
 
 

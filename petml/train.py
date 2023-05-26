@@ -18,7 +18,7 @@ import petml.helper as helper
 
 MAFFT_EXE = '/usr/local/bin/mafft' # Change this
 HMMSEARCH_EXE = '/usr/local/bin/hmmsearch' # Change this
-TMP = 'data/tmp'
+TMP = 'petml/data/tmp'
 DELETE_TMP_FILES = True
 if not os.path.exists(TMP): os.makedirs(TMP)
 
@@ -65,12 +65,12 @@ datasets = [
 
 
 # Get sequence data
-headers, sequences = helper.read_fasta('data/activity_datasets/sequences.fasta')
+headers, sequences = helper.read_fasta('petml/data/activity_datasets/sequences.fasta')
 short_names = [f"Seq{i+1}" for i in range(len(headers))]
 short_to_full = dict(zip(short_names, headers))
 full_to_short = dict(zip(headers, short_names))
 seqdict = dict(zip(short_names, sequences))
-helper.write_fasta(seqdict, 'data/tmp/sequences.fasta')
+helper.write_fasta(seqdict, 'petml/data/tmp/sequences.fasta')
 
 
 # Pairwise data from all activity datasets
@@ -80,7 +80,7 @@ seqid = 0
 for dataset in datasets:
 
     # Retrieve experiment labels
-    df = pd.read_excel(f'data/activity_datasets/{dataset}.xlsx', index_col=0, engine='openpyxl')
+    df = pd.read_excel(f'petml/data/activity_datasets/{dataset}.xlsx', index_col=0, engine='openpyxl')
     proteins = df['Protein'].values
     activities = df['Activity'].values
     
@@ -103,7 +103,7 @@ for dataset in datasets:
 # Write pairwise data to csv
 dfpaired = pd.DataFrame(paired_data).transpose()
 dfpaired.index = dfpaired.seqid
-dfpaired.to_csv('data/tmp/paired_data.csv')
+dfpaired.to_csv('petml/data/tmp/paired_data.csv')
 
 
 
@@ -117,34 +117,34 @@ dfpaired.to_csv('data/tmp/paired_data.csv')
 #===================================================#
 
 # Label sequences
-heads_label, seqs_label = helper.read_fasta('data/tmp/sequences.fasta')
+heads_label, seqs_label = helper.read_fasta('petml/data/tmp/sequences.fasta')
 
 
 # Search label sequences with HMM of evolutionary sequences
 # Do this to remove flanking regions from sequence
-helper.search_with_HMM(seq_file='data/tmp/sequences.fasta', 
-                       hmm_file='data/unsupervised/jackhmmer_hmm_b04.txt', 
+helper.search_with_HMM(seq_file='petml/data/tmp/sequences.fasta', 
+                       hmm_file='petml/data/unsupervised/jackhmmer_hmm_b04.txt', 
                        threshold=0, 
-                       outdir='data/hmmoutput', 
+                       outdir='petml/data/hmmoutput', 
                        hmmsearch_exe=HMMSEARCH_EXE)
 
 
 # Sequences returned by hmmsearch
 subprocess.check_output(
-     'mv data/hmmoutput/aln_no_gaps.fasta data/tmp/sequences_hmm.fasta',
+     'mv petml/data/hmmoutput/aln_no_gaps.fasta petml/data/tmp/sequences_hmm.fasta',
      shell=True
      ) # Rename sequence file
-subprocess.check_output('rm -rf data/hmmoutput', shell=True)
+subprocess.check_output('rm -rf petml/data/hmmoutput', shell=True)
 
 
 # Edit sequence file returned by HMM to ensure the same headings as original file
-heads, seqs = helper.read_fasta('data/tmp/sequences_hmm.fasta')
+heads, seqs = helper.read_fasta('petml/data/tmp/sequences_hmm.fasta')
 heads = [head.split('/')[0] for head in heads]
-helper.write_fasta(dict(zip(heads, seqs)), 'data/tmp/sequences_hmm.fasta')
+helper.write_fasta(dict(zip(heads, seqs)), 'petml/data/tmp/sequences_hmm.fasta')
 
 
 # Select a subset of evolutionary alignment (to save time in alignment)
-heads, seqs = helper.read_fasta('data/unsupervised/jackhmmer_seqs_b04.fasta')
+heads, seqs = helper.read_fasta('petml/data/unsupervised/jackhmmer_seqs_b04.fasta')
 lengths = [len(seq.replace('-','')) for seq in seqs]
 select1 = np.argsort(lengths)[-1000:] # 500 longest sequences
 np.random.seed(0)
@@ -153,15 +153,15 @@ select2 = np.random.choice(list(set(np.arange(len(seqs))) - set(select1)),
 select = list(select1) + list(select2)
 heads_select, seqs_select = np.array(heads)[select], np.array(seqs)[select]
 helper.write_fasta(dict(zip(heads_select, seqs_select)),
-                   'data/tmp/jackhmmer_seqs_b04_small.fasta')
+                   'petml/data/tmp/jackhmmer_seqs_b04_small.fasta')
 
 
 # Add label sequences to evolutionary alignment
-helper.align_with_MSA(seq_file='data/tmp/sequences_hmm.fasta', 
-                      msa_file='data/tmp/jackhmmer_seqs_b04_small.fasta',
-                      out_file='data/tmp/sequences_msa.fasta',
+helper.align_with_MSA(seq_file='petml/data/tmp/sequences_hmm.fasta', 
+                      msa_file='petml/data/tmp/jackhmmer_seqs_b04_small.fasta',
+                      out_file='petml/data/tmp/sequences_msa.fasta',
                       mafft_exe=MAFFT_EXE)
-assert len(helper.read_fasta('data/tmp/sequences_msa.fasta')[1][0]) == 1813
+assert len(helper.read_fasta('petml/data/tmp/sequences_msa.fasta')[1][0]) == 1813
 
 
 
@@ -175,20 +175,20 @@ assert len(helper.read_fasta('data/tmp/sequences_msa.fasta')[1][0]) == 1813
 #================================================#
 
 # First, trim MSA, dropping positions with <10% coverage in jackhmmer MSA
-df = helper.fasta_to_df('data/tmp/sequences_msa.fasta')
-locs = pd.read_csv('data/supervised/aln_positions_469.csv', index_col=None, 
+df = helper.fasta_to_df('petml/data/tmp/sequences_msa.fasta')
+locs = pd.read_csv('petml/data/supervised/aln_positions_469.csv', index_col=None, 
                    header=None).values.flatten()
 assert len(locs) == 469
 df = df.iloc[:,locs]
-helper.df_to_fasta(df, 'data/tmp/sequences_msa_trimmed.fasta')
+helper.df_to_fasta(df, 'petml/data/tmp/sequences_msa_trimmed.fasta')
 
 
 # One hot encode trimmed MSA
-headers, sequences = helper.read_fasta('data/tmp/sequences_msa_trimmed.fasta')
+headers, sequences = helper.read_fasta('petml/data/tmp/sequences_msa_trimmed.fasta')
 df = pd.DataFrame(sequences, index=headers)
 ohe = helper.OneHotEncoder()
 df = pd.DataFrame(ohe.encode_from_df(df, col=0), index=headers)
-df.to_csv('data/tmp/onehot.csv')
+df.to_csv('petml/data/tmp/onehot.csv')
 
 
 
@@ -202,13 +202,13 @@ df.to_csv('data/tmp/onehot.csv')
 #================================================#
 
 # Get data
-dfpaired = pd.read_csv('data/tmp/paired_data.csv', index_col=0)
-dfonehot = pd.read_csv('data/tmp/onehot.csv', index_col=0)
+dfpaired = pd.read_csv('petml/data/tmp/paired_data.csv', index_col=0)
+dfonehot = pd.read_csv('petml/data/tmp/onehot.csv', index_col=0)
 
 # Standardize one-hot encoding representation
 mean_std_onehot = pd.DataFrame({'means':dfonehot.mean(axis=0).values, 
                                 'stds':dfonehot.std(axis=0).values})
-mean_std_onehot.to_csv('data/supervised/onehot_mean_std.csv')
+mean_std_onehot.to_csv('petml/data/supervised/onehot_mean_std.csv')
 dfonehot = (dfonehot - mean_std_onehot['means'].values) / (mean_std_onehot['stds'].values + 1e-8)
 
 # Prepare training data as pairwise data
@@ -227,7 +227,7 @@ model = LogisticRegression(C=1e-5,
 model = model.fit(Z, y)
 
 # Save model
-joblib.dump(model, 'data/supervised/onehot_log_reg.pkl')
+joblib.dump(model, 'petml/data/supervised/onehot_log_reg.pkl')
 
 
 
@@ -241,7 +241,7 @@ joblib.dump(model, 'data/supervised/onehot_log_reg.pkl')
 #================================================#
 
 # Get consensus sequence
-fasta = 'data/unsupervised/jackhmmer_seqs_b04.fasta'    
+fasta = 'petml/data/unsupervised/jackhmmer_seqs_b04.fasta'    
 df = helper.fasta_to_df(fasta)
 consensus = ''
 for col in df.columns:
@@ -249,7 +249,7 @@ for col in df.columns:
     consensus += str(res.index[0])
 helper.write_fasta(dict(zip(['jackhmmer_consensus_b04'], 
                             [consensus])),
-                   'data/unsupervised/jackhmmer_consensus_b04.fasta')
+                   'petml/data/unsupervised/jackhmmer_consensus_b04.fasta')
 
 
 
@@ -260,7 +260,7 @@ helper.write_fasta(dict(zip(['jackhmmer_consensus_b04'],
 #========================#
 
 if DELETE_TMP_FILES:
-    subprocess.call('rm -rfv data/tmp/', shell=True)
+    subprocess.call('rm -rfv petml/data/tmp/', shell=True)
     
     
     
