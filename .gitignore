@@ -2,4 +2,5 @@
 module/__pycache__/
 env/
 petml/data/tmp
+petml/__pycache__
 gitcommands.sh
