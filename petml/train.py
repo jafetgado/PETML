@@ -144,6 +144,7 @@ helper.write_fasta(dict(zip(heads, seqs)), 'petml/data/tmp/sequences_hmm.fasta')
 
 
 # Select a subset of evolutionary alignment (to save time in alignment)
+'''
 heads, seqs = helper.read_fasta('petml/data/unsupervised/jackhmmer_seqs_b04.fasta')
 lengths = [len(seq.replace('-','')) for seq in seqs]
 select1 = np.argsort(lengths)[-1000:] # 500 longest sequences
@@ -154,11 +155,12 @@ select = list(select1) + list(select2)
 heads_select, seqs_select = np.array(heads)[select], np.array(seqs)[select]
 helper.write_fasta(dict(zip(heads_select, seqs_select)),
                    'petml/data/tmp/jackhmmer_seqs_b04_small.fasta')
+'''
 
 
 # Add label sequences to evolutionary alignment
 helper.align_with_MSA(seq_file='petml/data/tmp/sequences_hmm.fasta', 
-                      msa_file='petml/data/tmp/jackhmmer_seqs_b04_small.fasta',
+                      msa_file='petml/data/unsupervised/jackhmmer_seqs_b04_small.fasta',
                       out_file='petml/data/tmp/sequences_msa.fasta',
                       mafft_exe=MAFFT_EXE)
 assert len(helper.read_fasta('petml/data/tmp/sequences_msa.fasta')[1][0]) == 1813
@@ -241,7 +243,7 @@ joblib.dump(model, 'petml/data/supervised/onehot_log_reg.pkl')
 #================================================#
 
 # Get consensus sequence
-fasta = 'petml/data/unsupervised/jackhmmer_seqs_b04.fasta'    
+fasta = 'petml/data/unsupervised/jackhmmer_seqs_b04_small.fasta'    
 df = helper.fasta_to_df(fasta)
 consensus = ''
 for col in df.columns:

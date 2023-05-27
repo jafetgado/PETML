@@ -194,10 +194,31 @@ def search_with_HMM(seq_file,
         
         
         
+def parse_hmm_tabout(tabout):
+    '''Parse a hmmer tab output file and return a dataframe of search results'''
+    
+    data = []
+    with open(tabout, 'r') as tab:
+        for line in tab:
+            if not line.startswith('#'):
+                line = line.split()
+                data.append(line)
+    data = pd.DataFrame(data)
+    
+    return data
+
+
+
+
+
+
+
+
 def align_with_MSA(seq_file,
                    msa_file,
                    out_file,
-                   mafft_exe='/usr/local/bin/mafft'):
+                   mafft_exe='/usr/local/bin/mafft',
+                   verbose=True):
     '''Add sequences to an existing alignment with MAFFT'''
     
     # Check paths/files
@@ -206,6 +227,8 @@ def align_with_MSA(seq_file,
     
     # Add sequences to VAE MSA with mafft, keeping the original MSA positions
     command = f'{mafft_exe} --keeplength --add {seq_file} {msa_file} > {out_file}'
+    if not verbose:
+        command += ' 2> .mafft_stdout.txt'
     _ = subprocess.check_output(command, shell=True)
     
     # Select only added sequences from full alignment
@@ -213,6 +236,9 @@ def align_with_MSA(seq_file,
     heads, seqs = read_fasta(out_file) 
     heads_select, seqs_select = heads[len(heads_msa):], seqs[len(seqs_msa):]
     write_fasta(dict(zip(heads_select, seqs_select)), out_file)        
+    
+    if not verbose:
+        os.remove('.mafft_stdout.txt')
 
 
 
@@ -617,18 +643,7 @@ def hmmsearch_fxn(hmmfile, seqfile, hmmsearch_exec, threshold=0, tempdir='./temp
 
 
 
-def parse_hmm_tabout(tabout):
-    '''Parse a hmmer tab output file and return a dataframe of search results'''
-    
-    data = []
-    with open(tabout, 'r') as tab:
-        for line in tab:
-            if not line.startswith('#'):
-                line = line.split()
-                data.append(line)
-    data = pd.DataFrame(data)
-    
-    return data
+
 
 
 
