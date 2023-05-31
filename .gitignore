@@ -4,4 +4,3 @@ env/
 petml/data/tmp
 petml/__pycache__
 gitcommands.sh
-*.csv
