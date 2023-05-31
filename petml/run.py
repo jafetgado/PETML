@@ -95,7 +95,6 @@ def print(*args, **kwargs):
 def main():
     '''Run supervised and unsupervised predictions'''
 
-
     # Parse command line arguments
     args = parse_arguments()
     
@@ -174,7 +173,7 @@ def main():
                           msa_file=b04_fasta, 
                           out_file=alnfile, 
                           mafft_exe=mafft_exe, 
-                          verbose=args.verbose)
+                          verbose=0)
     
     
     # Trim MSA to select IsPETase positions (for active site HMM)
@@ -264,8 +263,8 @@ def main():
     # Write results
     results = pd.DataFrame(index=seq_accessions)
     results['Supervised'] = y_logreg.values
-    results['PET HMM'] = y_petase_hmm.values
     results['Active site HMM'] = y_active_site_hmm.values
+    results['PET HMM'] = y_petase_hmm.values
     results['Homologs HMM'] = y_homologs_hmm.values
     results['Blosum'] = y_blosum.values
     results.to_csv(f'{args.outdir}/raw_scores.csv')
@@ -281,7 +280,8 @@ def main():
     scores['Blosum'] = standardize(y_blosum.values, score_mean_std.loc['Blosum'])
     unsupervised =  scores.loc[:,['PET HMM', 'Active site HMM', 'Homologs HMM',
                                   'Blosum']].mean(axis=1)
-    scores['combined'] = 0.5 * scores['Supervised'] + 0.5 * unsupervised
+    scores['petml_scores'] = 0.5 * scores['Supervised'] + 0.5 * unsupervised
+    scores = scores.iloc[:,[5,0,1,2,3,4]]
     scores.to_csv(f'{args.outdir}/final_scores.csv')
     
     
@@ -293,4 +293,6 @@ def main():
     
     
     
+if __name__ == '__main__':
+    main()
     

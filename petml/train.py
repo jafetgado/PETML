@@ -1,5 +1,5 @@
 """
-Train ML model to predict PET hydrolase activity
+Train supervised ML model to predict PET hydrolase activity
 """
 
 
@@ -19,10 +19,9 @@ import petml.helper as helper
 MAFFT_EXE = '/usr/local/bin/mafft' # Change this
 HMMSEARCH_EXE = '/usr/local/bin/hmmsearch' # Change this
 TMP = 'petml/data/tmp'
-DELETE_TMP_FILES = True
-if not os.path.exists(TMP): os.makedirs(TMP)
-
-
+DELETE_TMP_FILES = False
+if not os.path.exists(TMP): 
+    os.makedirs(TMP)
 
 
 
@@ -111,8 +110,6 @@ dfpaired.to_csv('petml/data/tmp/paired_data.csv')
 
 
 
-
-
 #===================================================#
 # Prepare sequence alignment of sequences 
 #===================================================#
@@ -171,8 +168,6 @@ assert len(helper.read_fasta('petml/data/tmp/sequences_msa.fasta')[1][0]) == 181
 
 
 
-
-
 #================================================#
 # One hot encode sequence alignment
 #================================================#
@@ -192,8 +187,6 @@ df = pd.DataFrame(sequences, index=headers)
 ohe = helper.OneHotEncoder()
 df = pd.DataFrame(ohe.encode_from_df(df, col=0), index=headers)
 df.to_csv('petml/data/tmp/onehot.csv')
-
-
 
 
 
@@ -237,8 +230,6 @@ joblib.dump(model, 'petml/data/supervised/onehot_log_reg.pkl')
 
 
 
-
-
 #================================================#
 # Prepare data for unsupervised prediction
 #================================================#
@@ -253,6 +244,7 @@ for col in df.columns:
 helper.write_fasta(dict(zip(['jackhmmer_consensus_b04'], 
                             [consensus])),
                    'petml/data/unsupervised/jackhmmer_consensus_b04.fasta')
+
 
 
 
