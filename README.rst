@@ -6,6 +6,7 @@ The predictive method combines supervised learning, using a dataset of 514 activ
 and "unsupervised" learning, using profile hidden Markov models (pHMM) and Blosum similarity scores, 
 to rank the putative enzyme sequences. 
 
+
 Usage 
 -------------
 
@@ -23,6 +24,6 @@ Usage
 
 Citation
 ----------
-If you find EpHod useful, please cite the following:
+If you find PETML useful, please cite:
 
 Gado J.E., Shaw A.Y., et al, 2023. "Learning PET hydrolase activity from sparse experiment data".
