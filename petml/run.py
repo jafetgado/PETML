@@ -36,11 +36,11 @@ def parse_arguments():
     
     parser.add_argument('--seqfile', type=str, 
                         help='Path to fasta file of sequences')
-    parser.add_argument('--outdir', type=str, default='./petml_output',
+    parser.add_argument('--outdir', type=str, default='./',
                         help='Directory where output files will be written to')
     parser.add_argument('--verbose', type=int, default=1, 
                         help="Whether to print out progress: verbose (1) or silent (0)")
-    parser.add_argument('--delete_temp_files', type=int, default=1,
+    parser.add_argument('--delete_temp_files', type=int, default=0,
                         help="Whether to delete temporary files: Yes (1) or No (0)")
     args = parser.parse_args()
 
@@ -103,6 +103,8 @@ def main():
     assert os.path.exists(args.seqfile), f"{args.seqfile} not found"
     if not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
+    if args.verbose:
+        print(f"Prediction of PET hydrolase activity for sequences in {args.seqfile}")
         
     
     # Get model files
@@ -126,9 +128,12 @@ def main():
     
     # Get sequence data
     seq_accessions = helper.get_accession(args.seqfile)
+    seq_accessions = [acc.split('/')[0] for acc in seq_accessions]
     
     
     # Search sequences with evolutionary HMM (jackhmmer b04) to exclude flanking domains
+    if args.verbose:
+        print("Scoring sequences with homologs HMM.")
     helper.search_with_HMM(seq_file=args.seqfile, 
                            hmm_file=b04_hmm, 
                            threshold=0, 
@@ -151,6 +156,8 @@ def main():
     
     
     # Search sequences with PETase HMM
+    if args.verbose:
+        print("Scoring sequences with PET HMM.")
     helper.search_with_HMM(seq_file=args.seqfile, 
                            hmm_file=petase_hmm, 
                            threshold=0, 
@@ -168,6 +175,8 @@ def main():
     
     
     # Align sequences by adding to evolutionary alignment (jackhmmer b04) 
+    if args.verbose:
+        print("Adding sequences to homologs alignment. This may take a while.")    
     alnfile = f'{args.outdir}/sequences_aligned.fasta'
     helper.align_with_MSA(seq_file=hmmsearch_fasta,
                           msa_file=b04_fasta, 
@@ -193,6 +202,8 @@ def main():
     
     
     # Search selected positions with Active site HMM
+    if args.verbose:
+        print("Scoring sequences with active site HMM.")        
     helper.search_with_HMM(seq_file=active_site_fasta, 
                            hmm_file=activesite_hmm, 
                            threshold=0, 
@@ -209,6 +220,8 @@ def main():
     
     
     # METHOD 4: Blosum similarity with consensus sequence
+    if args.verbose:
+        print("Scoring sequences with Blosum similarity to consensus.")        
     _, [consensus_seq] = helper.read_fasta(consensus_fasta)
     headers, sequences = helper.read_fasta(alnfile)
     accessions = helper.get_accession(alnfile)
@@ -221,6 +234,8 @@ def main():
     
     
     # Trim MSA to select 469 positions used in training supervised model
+    if args.verbose:
+        print("Scoring sequences with pairwise supervised ranking model (logistic regression.")
     df = helper.fasta_to_df(alnfile)
     assert df.shape[1] == 1813
     locs = pd.read_csv(aln_positions_469, index_col=None, header=None).values.flatten()
@@ -232,6 +247,7 @@ def main():
     
     # One-hot encode trimmed aligned sequences
     headers, sequences = helper.read_fasta(trimseqfile)
+    sequences = [helper.canonize(seq) for seq in sequences]
     accessions = helper.get_accession(trimseqfile)
     df = pd.DataFrame(sequences)
     ohe = helper.OneHotEncoder()
@@ -261,13 +277,19 @@ def main():
     
     
     # Write results
+    if args.verbose:
+        print("Writing predicted scores.")
     results = pd.DataFrame(index=seq_accessions)
     results['Supervised'] = y_logreg.values
     results['Active site HMM'] = y_active_site_hmm.values
     results['PET HMM'] = y_petase_hmm.values
     results['Homologs HMM'] = y_homologs_hmm.values
     results['Blosum'] = y_blosum.values
+    results = results.fillna(0)
     results.to_csv(f'{args.outdir}/raw_scores.csv')
+    if args.verbose:
+        print(f"Raw scores are in {args.outdir}/raw_scores.csv")
+    
     
     
     # Combine (average) supervised and unsupervised standardized scores
@@ -281,14 +303,32 @@ def main():
     unsupervised =  scores.loc[:,['PET HMM', 'Active site HMM', 'Homologs HMM',
                                   'Blosum']].mean(axis=1)
     scores['petml_scores'] = 0.5 * scores['Supervised'] + 0.5 * unsupervised
-    scores = scores.iloc[:,[5,0,1,2,3,4]]
+    scores = scores.loc[:,['petml_scores']]
     scores.to_csv(f'{args.outdir}/final_scores.csv')
+    if args.verbose:
+        print(f"Final average standardized scores are in {args.outdir}/final_scores.csv")
+        print("Higher scores imply higher predicted activity.")
     
     
     # Delete temp. files
     if args.delete_temp_files:
-        _ = subprocess.check_output(f"rm -rf {args.outdir}/*_hmmout")
-        _ = subprocess.check_output(f"rm -rf {args.outdir}/sequences_*.fasta")
+        if args.verbose:
+            print(f"Deleting temporary files from {args.outdir}")    
+        _ = subprocess.check_output(f"rm -rf {args.outdir}/*_hmmout", shell=True)
+        _ = subprocess.check_output(f"rm -rf {args.outdir}/sequences_*.fasta", shell=True)
+    else:
+        if os.path.exists(f"{args.outdir}/tmp"):
+            _ = subprocess.check_output(f"rm -rf {args.outdir}/tmp/*", shell=True)
+        else:
+            os.makedirs(f"{args.outdir}/tmp")
+        _ = subprocess.check_output(f"mv -f {args.outdir}/*_hmmout {args.outdir}/tmp/",
+                                    shell=True)
+        _ = subprocess.check_output(f"mv -f {args.outdir}/sequences_*.fasta {args.outdir}/tmp/",
+                                    shell=True)
+
+
+    if args.verbose:
+        print("DONE!")    
     
     
     

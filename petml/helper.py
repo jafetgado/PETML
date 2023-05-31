@@ -247,6 +247,19 @@ def df_to_fasta(df, fasta):
 
 
 
+def canonize(seq, remove=list('BJOUXZ'), replace='-'):
+    '''Replace non-canonical characters with a specified character'''
+    
+    for aa in remove:
+        seq = seq.replace(aa, replace)
+        
+    return seq
+
+
+
+
+
+
 class OneHotEncoder():
 
     def __init__(self):
@@ -279,3 +292,11 @@ class OneHotEncoder():
         oh_seqs = np.vstack( df[col].apply(lambda x: np.ravel([aa_to_oh[i] for i in list(x)])).values)
     
         return oh_seqs
+
+
+
+
+
+
+
+    
