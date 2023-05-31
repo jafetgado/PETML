@@ -71,6 +71,7 @@ short_to_full = dict(zip(short_names, headers))
 full_to_short = dict(zip(headers, short_names))
 seqdict = dict(zip(short_names, sequences))
 helper.write_fasta(seqdict, 'petml/data/tmp/sequences.fasta')
+pd.Series(short_to_full).to_csv('petml/data/tmp/seq_name_key.csv')
 
 
 # Pairwise data from all activity datasets
@@ -216,7 +217,7 @@ dfonehot = (dfonehot - mean_std_onehot['means'].values) / (mean_std_onehot['stds
 # Prepare training data as pairwise data
 X1 = dfonehot.loc[dfpaired['name1'].values,:].values
 X2 = dfonehot.loc[dfpaired['name2'].values,:].values
-Z = X2 - X1
+Z = X1 - X2
 y = dfpaired['y'].values
 
 
