@@ -14,7 +14,6 @@ Usage
 
     git clone https://github.com/jafetgado/PETML.git
     cd PETML
-    export PYTHONPATH="$(pwd)"
     conda env create -f ./env.yml -p ./env
     conda activate ./env
     python ./petml/run.py --seqfile "./example/sequences.fasta" --outdir ./example 
