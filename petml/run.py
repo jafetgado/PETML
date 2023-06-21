@@ -152,6 +152,7 @@ def main():
     df = helper.parse_hmm_tabout(tabout)
     y_homologs_hmm = df.loc[:,5]
     y_homologs_hmm.index = [item.split()[0].split('/')[0] for item in df.loc[:,0]]
+    y_homologs_hmm = y_homologs_hmm[~y_homologs_hmm.index.duplicated(keep='first')]
     y_homologs_hmm = y_homologs_hmm.reindex(seq_accessions).astype(float)
     
     
@@ -171,6 +172,7 @@ def main():
     y_petase_hmm = df.loc[:,5]
     y_petase_hmm.index = df.loc[:,0]
     y_petase_hmm.index = [item.split()[0].split('/')[0] for item in df.loc[:,0]]
+    y_petase_hmm = y_petase_hmm[~y_petase_hmm.index.duplicated(keep='first')]    
     y_petase_hmm = y_petase_hmm.reindex(seq_accessions).astype(float)
     
     
@@ -216,6 +218,7 @@ def main():
     df = helper.parse_hmm_tabout(tabout)
     y_active_site_hmm = df.loc[:,5]
     y_active_site_hmm.index = [item.split()[0].split('/')[0] for item in df.loc[:,0]]
+    y_active_site_hmm = y_active_site_hmm[~y_active_site_hmm.index.duplicated(keep='first')]        
     y_active_site_hmm = y_active_site_hmm.reindex(seq_accessions).astype(float)
     
     
@@ -230,6 +233,7 @@ def main():
                                        gap_penalty=-4) for seq in sequences]
     y_blosum = pd.Series(y_blosum, index=accessions)
     y_blosum.index = [item.split()[0].split('/')[0] for item in y_blosum.index]
+    y_blosum = y_blosum[~y_blosum.index.duplicated(keep='first')]            
     y_blosum = y_blosum.reindex(seq_accessions)
     
     
@@ -273,6 +277,7 @@ def main():
     Z = X.values - X2.values
     y_logreg = pd.Series(model.predict_proba(Z)[:,-1], index=accessions)
     y_logreg.index = [item.split()[0].split('/')[0] for item in y_logreg.index]
+    y_logreg = y_logreg[~y_logreg.index.duplicated(keep='first')]                
     y_logreg = y_logreg.reindex(seq_accessions).astype(float)
     
     
