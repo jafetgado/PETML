@@ -302,8 +302,8 @@ def main():
     scores['Blosum'] = standardize(y_blosum.values, score_mean_std.loc['Blosum'])
     unsupervised =  scores.loc[:,['PET HMM', 'Active site HMM', 'Homologs HMM',
                                   'Blosum']].mean(axis=1)
+    scores['unsupervised'] = unsupervised
     scores['petml_scores'] = 0.5 * scores['Supervised'] + 0.5 * unsupervised
-    scores = scores.loc[:,['petml_scores']]
     scores.to_csv(f'{args.outdir}/final_scores.csv')
     if args.verbose:
         print(f"Final average standardized scores are in {args.outdir}/final_scores.csv")
@@ -333,6 +333,9 @@ def main():
     
     
     
+    
+    
 if __name__ == '__main__':
+
     main()
     

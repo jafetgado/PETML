@@ -16,8 +16,8 @@ import petml.helper as helper
 
 
 
-MAFFT_EXE = '/usr/local/bin/mafft' # Change this
-HMMSEARCH_EXE = '/usr/local/bin/hmmsearch' # Change this
+MAFFT_EXE = '/usr/local/bin/mafft' 
+HMMSEARCH_EXE = '/usr/local/bin/hmmsearch'
 TMP = 'petml/data/tmp'
 DELETE_TMP_FILES = False
 if not os.path.exists(TMP): 
