@@ -25,4 +25,4 @@ Citation
 ----------
 If you find PETML useful, please cite:
 
-Gado J.E., Shaw A.Y., et al, 2023. "Learning PET hydrolase activity from sparse experiment data".
+Norton-Baker B, Komp E, Gado JE, et al, 2025. "Machine learning-guided identification of PET hydrolases from natural diversity".
